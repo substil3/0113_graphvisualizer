@@ -88,23 +88,25 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
 
   if (hits.length === 0) return;
 
-  const index = hits[0].index;
+  const clickedIndex = hits[0].index;
 
   if (selectedIndex === null) {
-    selectedIndex = index;
-    selectNode(index);
-  } else if (selectedIndex !== index) {
+    selectedIndex = clickedIndex;
+    selectNode(clickedIndex);
+  } else if (selectedIndex !== clickedIndex) {
     deselectNode(selectedIndex);
 
     const p1 = new THREE.Vector3().fromBufferAttribute(positionAttr, selectedIndex);
-    const p2 = new THREE.Vector3().fromBufferAttribute(positionAttr, index);
+    const p2 = new THREE.Vector3().fromBufferAttribute(positionAttr, clickedIndex);
 
     scene.add(createEdge(p1, p2));
 
     logMessage(
-      `${people[selectedIndex].name} and ${people[index].name} is connected.`
+      `${people[selectedIndex].name} and ${people[clickedIndex].name} is connected.`
     );
 
+    people[selectedIndex].connect(clickedIndex)
+    people[clickedIndex].connect(selectedIndex)
     selectedIndex = null;
   }
 });
