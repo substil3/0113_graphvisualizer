@@ -1,11 +1,13 @@
 export class Person {
-  constructor(id, name) {
+  constructor(id, name, marked = null) {
     this.id = id;
     this.name = name;
-    this.adjs = {}
+    this.adjs = new Set();
+
+    this.marked = null
   }
 
-  connect(index) {
-    this.adjs += {index}
+  connect(otherIndex) {
+    this.adjs.add(otherIndex);
   }
 }

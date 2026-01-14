@@ -105,8 +105,8 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
       `${people[selectedIndex].name} and ${people[clickedIndex].name} is connected.`
     );
 
-    people[selectedIndex].connect(clickedIndex)
-    people[clickedIndex].connect(selectedIndex)
+    console.log(people[selectedIndex])
+
     selectedIndex = null;
   }
 });

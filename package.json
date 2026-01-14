@@ -1,7 +1,11 @@
 {
-  "dependencies": {
-    "express": "^5.2.1",
-    "node": "^24.12.0"
+  "name": "graphvisualizer",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
   },
-  "type": "module"
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }

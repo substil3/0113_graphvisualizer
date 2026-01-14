@@ -14,7 +14,8 @@ export function createPeople(count = 1000) {
   for (let i = 0; i < count; i++) {
     people[i] = new Person(
       i,
-      faker.person.fullName()
+      faker.person.fullName(),
+      i === 0 ? "start" : (i === count-1 ? "goal" : "normal") 
     );
   }
 
