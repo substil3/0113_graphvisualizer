@@ -1,13 +1,17 @@
 export class Person {
-  constructor(id, name, marked = null) {
+  constructor(id, name) {
     this.id = id;
     this.name = name;
+
     this.adjs = new Set();
 
-    this.marked = null
+    // simulation state
+    this.busy = false;
+    this.busyUntil = 0;
+    this.queue = [];
   }
 
-  connect(otherIndex) {
-    this.adjs.add(otherIndex);
+  connect(other) {
+    this.adjs.add(other);
   }
 }

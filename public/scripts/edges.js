@@ -9,3 +9,14 @@ export function createEdge(p1, p2) {
   const material = new THREE.LineBasicMaterial({ color: 0xffffff });
   return new THREE.Line(geometry, material);
 }
+
+export class Edge {
+  constructor(from, to, mesh) {
+    this.from = from;
+    this.to = to;
+    this.mesh = mesh;
+
+    this.busy = false;
+    this.busyUntil = 0;
+  }
+}
