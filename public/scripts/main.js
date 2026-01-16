@@ -7,6 +7,9 @@ import { enableMovement } from "./movement.js";
 import { fetchPeople } from "./data.js";
 import { createLabels, updateLabels } from "./labels.js";
 import { logMessage } from "./console.js";
+import { generateConnectedGraph } from "./graph.js";
+import { setupSimulationButton } from "./ui.js";
+
 
 /* =============================
    Scene Setup
@@ -122,12 +125,60 @@ enableMovement({
 });
 
 /* =============================
+   Setup Simulation - Generate Graph, Create Packet
+============================= */
+const edges = generateConnectedGraph(people.length);
+//const packetSystem = new PacketSystem(scene); TODO
+console.log(people)
+for (let edge in edges) {
+    let startIndex, endIndex = edge
+    people[startIndex].connect(endIndex)
+    people[endIndex].connect(startIndex)
+
+    const p1 = new THREE.Vector3().fromBufferAttribute(positionAttr, startIndex);
+    const p2 = new THREE.Vector3().fromBufferAttribute(positionAttr, endIndex);
+
+    scene.add(createEdge(p1, p2));
+
+    logMessage(
+      `${people[startIndex].name} and ${people[endIndex].name} is connected.`
+    );
+}
+let simulationRunning = false;
+
+setupSimulationButton(() => {
+  simulationRunning = true;
+  logMessage("simulation running")
+});
+
+/* =============================
    Render Loop
 ============================= */
+function maybeSendPacket() {
+  if (!simulationRunning) return;
+  if (Math.random() > 0.02) return;
+
+  const [a, b] = edges[Math.floor(Math.random() * edges.length)];
+
+  const p1 = new THREE.Vector3().fromBufferAttribute(
+    geometry.attributes.position, a
+  );
+  const p2 = new THREE.Vector3().fromBufferAttribute(
+    geometry.attributes.position, b
+  );
+
+  packetSystem.spawn(p1, p2);
+}
+
 function animate() {
   requestAnimationFrame(animate);
+
+  maybeSendPacket();
+  packetSystem.update();
+
   renderer.render(scene, camera);
-  updateLabels(labels, geometry, camera, renderer);
 }
+
+animate();
 
 animate();
