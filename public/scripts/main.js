@@ -4,9 +4,12 @@ import { createScene } from "./scene.js";
 import { createNodes } from "./nodes.js";
 import { createEdge } from "./edges.js";
 import { enableMovement } from "./movement.js";
-import { fetchPeople } from "./data.js";
 import { createLabels, updateLabels } from "./labels.js";
 import { logMessage } from "./console.js";
+import { generateConnectedGraph } from "./graph.js";
+import { setupSimulationButton } from "./ui.js";
+import { createPeople } from "../structure/personSystem.js";
+
 
 /* =============================
    Scene Setup
@@ -14,23 +17,21 @@ import { logMessage } from "./console.js";
 const { scene, camera, renderer } = createScene();
 
 /* =============================
-   Load People (Server-Side Data)
+   Load People (Local Data)
 ============================= */
-const people = await fetchPeople();
+const people = createPeople();
 
 /* =============================
-   Nodes (Points)
+   Setup Simulation - Generate Nodes and Graph, Create Packet
 ============================= */
-const { points, geometry } = createNodes(people);
+const {points, geometry, gridNodes} = createNodes(people);
+const edges = generateConnectedGraph(gridNodes);
+//const packetSystem = new PacketSystem(scene); TODO
 scene.add(points);
 
 const selectedAttr = geometry.attributes.selected;
 const positionAttr = geometry.attributes.position;
 
-/* =============================
-   Labels
-============================= */
-const labels = createLabels(people);
 
 /* =============================
    Selection Helpers
@@ -121,13 +122,58 @@ enableMovement({
   maxZoom: 5.0
 });
 
+
+for (const edge of edges) {
+
+    const startIndex = edge[0];
+    const endIndex = edge[1];
+    
+    people[startIndex].connect(endIndex)
+    people[endIndex].connect(startIndex)
+    
+    const p1 = new THREE.Vector3().fromBufferAttribute(positionAttr, startIndex);
+    const p2 = new THREE.Vector3().fromBufferAttribute(positionAttr, endIndex);
+
+    scene.add(createEdge(p1, p2));
+
+    logMessage(
+      `${people[startIndex].name} and ${people[endIndex].name} is connected.`
+    );
+}
+let simulationRunning = false;
+
+setupSimulationButton(() => {
+  simulationRunning = true;
+  logMessage("simulation running")
+});
+
 /* =============================
    Render Loop
 ============================= */
+function maybeSendPacket() {
+  if (!simulationRunning) return;
+  if (Math.random() > 0.02) return;
+
+  const [a, b] = edges[Math.floor(Math.random() * edges.length)];
+
+  const p1 = new THREE.Vector3().fromBufferAttribute(
+    geometry.attributes.position, a
+  );
+  const p2 = new THREE.Vector3().fromBufferAttribute(
+    geometry.attributes.position, b
+  );
+
+  packetSystem.spawn(p1, p2);
+}
+
 function animate() {
   requestAnimationFrame(animate);
+
+  maybeSendPacket();
+
   renderer.render(scene, camera);
-  updateLabels(labels, geometry, camera, renderer);
 }
+
+animate();
 
 animate();
