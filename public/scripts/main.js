@@ -23,24 +23,16 @@ const people = createPeople();
 
 
 /* =============================
-   Setup Simulation - Generate Graph, Create Packet
+   Setup Simulation - Generate Nodes and Graph, Create Packet
 ============================= */
 const edges = generateConnectedGraph(people.length);
 //const packetSystem = new PacketSystem(scene); TODO
-
-/* =============================
-   Nodes (Points)
-============================= */
 const { points, geometry } = createNodes(people, edges);
 scene.add(points);
 
 const selectedAttr = geometry.attributes.selected;
 const positionAttr = geometry.attributes.position;
 
-/* =============================
-   Labels
-============================= */
-const labels = createLabels(people);
 
 /* =============================
    Selection Helpers
