@@ -2,11 +2,13 @@ export async function loadConfig() {
 
     const config = {
     "GRID_CELL_SIZE": 1.0,
-    "GRID_WIDTH": 80,
-    "GRID_HEIGHT": 80,
+    "GRID_WIDTH": 40,
+    "GRID_HEIGHT": 40,
 
-    "SCENE_NODES_MIN_DISTANCE": 5,              // in grid cells
-    "SCENE_NODES_CONNECTED_MAX_DISTANCE": 10,    // in grid cells
+    "GRAPH_EXTRA_EDGE_PROBABILITY": 0.15,
+
+    "GRAPH_NODES_MIN_DISTANCE": 5,              // in grid cells
+    "GRAPH_NODES_CONNECTED_MAX_DISTANCE": 20,    // in grid cells
 
     "POINT_SIZE" : 14,
     "TOLERANCE_RATIO" : 3.0,

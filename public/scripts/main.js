@@ -21,13 +21,12 @@ const { scene, camera, renderer } = createScene();
 ============================= */
 const people = createPeople();
 
-
 /* =============================
    Setup Simulation - Generate Nodes and Graph, Create Packet
 ============================= */
-const edges = generateConnectedGraph(people.length);
+const {points, geometry, gridNodes} = createNodes(people);
+const edges = generateConnectedGraph(gridNodes);
 //const packetSystem = new PacketSystem(scene); TODO
-const { points, geometry } = createNodes(people, edges);
 scene.add(points);
 
 const selectedAttr = geometry.attributes.selected;

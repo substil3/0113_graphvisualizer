@@ -32,7 +32,7 @@ function gridToWorld(gx, gy, cellSize, width, height) {
    Node generation
    ============================================================ */
 
-export function createNodes(people, edges) {
+export function createNodes(people) {
   const count = people.length;
 
   if (count > config.GRID_WIDTH * config.GRID_HEIGHT) {
@@ -76,7 +76,6 @@ export function createNodes(people, edges) {
       if (!valid && attempt != 1000-1) continue;
 
       occupied.add(gridKey(gx, gy));
-      console.log(gx,gy)
       nodes.push({ gx, gy });
 
       const { x, y } = gridToWorld(
@@ -96,18 +95,6 @@ export function createNodes(people, edges) {
       if (!valid) {
         console.warn(`Failed to place node ${i} respecting grid constraints`);}
       break;
-    }
-  }
-
-  /* ---------- filter edges by grid distance ---------- */
-
-  const filteredEdges = [];
-
-  for (const [a, b] of edges) {
-    if (!nodes[a] || !nodes[b]) continue;
-
-    if (gridDistanceSq(nodes[a], nodes[b]) <= maxConnSq) {
-      filteredEdges.push([a, b]);
     }
   }
 
@@ -151,16 +138,9 @@ export function createNodes(people, edges) {
   });
 
   /* ---------- output ---------- */
-
   return {
     points: new THREE.Points(geometry, material),
     geometry,
-    edges: filteredEdges,
-    gridNodes: nodes,      // grid coordinates (gx, gy)
-    gridConfig: {
-      cellSize: GRID_CELL_SIZE,
-      width: GRID_WIDTH,
-      height: GRID_HEIGHT
-    }
+    gridNodes: nodes      // grid coordinates (gx, gy)
   };
 }
