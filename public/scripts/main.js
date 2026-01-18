@@ -9,7 +9,7 @@ import { logMessage } from "./console.js";
 import { generateConnectedGraph } from "./graph.js";
 import { setupSimulationButton } from "./ui.js";
 import { createPeople } from "../structure/personSystem.js";
-
+import { PacketSystem } from "../structure/packetSystem.js";
 
 /* =============================
    Scene Setup
@@ -26,12 +26,29 @@ const people = createPeople();
 ============================= */
 const {points, geometry, gridNodes} = createNodes(people);
 const edges = generateConnectedGraph(gridNodes);
-//const packetSystem = new PacketSystem(scene); TODO
+const packetSystem = new PacketSystem(scene); //TODO
 scene.add(points);
 
 const selectedAttr = geometry.attributes.selected;
 const positionAttr = geometry.attributes.position;
 
+for (const edge of edges) {
+
+    const startIndex = edge[0];
+    const endIndex = edge[1];
+    
+    people[startIndex].connect(endIndex)
+    people[endIndex].connect(startIndex)
+    
+    const p1 = new THREE.Vector3().fromBufferAttribute(positionAttr, startIndex);
+    const p2 = new THREE.Vector3().fromBufferAttribute(positionAttr, endIndex);
+
+    scene.add(createEdge(p1, p2));
+
+    logMessage(
+      `${people[startIndex].name} and ${people[endIndex].name} is connected.`
+    );
+}
 
 /* =============================
    Selection Helpers
@@ -123,23 +140,7 @@ enableMovement({
 });
 
 
-for (const edge of edges) {
 
-    const startIndex = edge[0];
-    const endIndex = edge[1];
-    
-    people[startIndex].connect(endIndex)
-    people[endIndex].connect(startIndex)
-    
-    const p1 = new THREE.Vector3().fromBufferAttribute(positionAttr, startIndex);
-    const p2 = new THREE.Vector3().fromBufferAttribute(positionAttr, endIndex);
-
-    scene.add(createEdge(p1, p2));
-
-    logMessage(
-      `${people[startIndex].name} and ${people[endIndex].name} is connected.`
-    );
-}
 let simulationRunning = false;
 
 setupSimulationButton(() => {
@@ -148,7 +149,7 @@ setupSimulationButton(() => {
 });
 
 /* =============================
-   Render Loop
+   Render Loop (TODO)
 ============================= */
 function maybeSendPacket() {
   if (!simulationRunning) return;
@@ -176,4 +177,3 @@ function animate() {
 
 animate();
 
-animate();

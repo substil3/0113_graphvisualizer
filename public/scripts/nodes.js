@@ -51,7 +51,6 @@ export function createNodes(people) {
   } = config;
 
   const minDistSq   = SCENE_NODES_MIN_DISTANCE ** 2;
-  const maxConnSq  = SCENE_NODES_CONNECTED_MAX_DISTANCE ** 2;
 
   const occupied = new Set();
   const nodes = []; // { gx, gy }

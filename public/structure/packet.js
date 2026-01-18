@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
 export class Packet {
   constructor(start, end, speed = 1) {
@@ -20,7 +20,7 @@ export class Packet {
   update() {
     this.progress += this.speed;
     if (this.progress >= 1) return false;
-
+    
     const pos = this.start.clone().lerp(this.end, this.progress);
     this.mesh.geometry.setFromPoints([pos]);
     return true;
