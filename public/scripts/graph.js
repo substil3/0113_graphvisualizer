@@ -1,4 +1,6 @@
-export function generateConnectedGraph(nodeCount, extraEdgeProbability = 0.3) {
+
+
+export function generateConnectedGraph(nodeCount, extraEdgeProbability = 0) {
   const edges = [];
 
   // random spanning tree

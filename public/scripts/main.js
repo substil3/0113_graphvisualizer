@@ -4,11 +4,11 @@ import { createScene } from "./scene.js";
 import { createNodes } from "./nodes.js";
 import { createEdge } from "./edges.js";
 import { enableMovement } from "./movement.js";
-import { fetchPeople } from "./data.js";
 import { createLabels, updateLabels } from "./labels.js";
 import { logMessage } from "./console.js";
 import { generateConnectedGraph } from "./graph.js";
 import { setupSimulationButton } from "./ui.js";
+import { createPeople } from "../structure/personSystem.js";
 
 
 /* =============================
@@ -17,14 +17,21 @@ import { setupSimulationButton } from "./ui.js";
 const { scene, camera, renderer } = createScene();
 
 /* =============================
-   Load People (Server-Side Data)
+   Load People (Local Data)
 ============================= */
-const people = await fetchPeople();
+const people = createPeople();
+
+
+/* =============================
+   Setup Simulation - Generate Graph, Create Packet
+============================= */
+const edges = generateConnectedGraph(people.length);
+//const packetSystem = new PacketSystem(scene); TODO
 
 /* =============================
    Nodes (Points)
 ============================= */
-const { points, geometry } = createNodes(people);
+const { points, geometry } = createNodes(people, edges);
 scene.add(points);
 
 const selectedAttr = geometry.attributes.selected;
@@ -124,17 +131,15 @@ enableMovement({
   maxZoom: 5.0
 });
 
-/* =============================
-   Setup Simulation - Generate Graph, Create Packet
-============================= */
-const edges = generateConnectedGraph(people.length);
-//const packetSystem = new PacketSystem(scene); TODO
-console.log(people)
-for (let edge in edges) {
-    let startIndex, endIndex = edge
+
+for (const edge of edges) {
+
+    const startIndex = edge[0];
+    const endIndex = edge[1];
+    
     people[startIndex].connect(endIndex)
     people[endIndex].connect(startIndex)
-
+    
     const p1 = new THREE.Vector3().fromBufferAttribute(positionAttr, startIndex);
     const p2 = new THREE.Vector3().fromBufferAttribute(positionAttr, endIndex);
 
@@ -174,7 +179,6 @@ function animate() {
   requestAnimationFrame(animate);
 
   maybeSendPacket();
-  packetSystem.update();
 
   renderer.render(scene, camera);
 }
