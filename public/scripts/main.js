@@ -11,6 +11,7 @@ import { setupSimulationButton } from "./ui.js";
 import { createPeople } from "../structure/personSystem.js";
 import { PacketSystem } from "../structure/packetSystem.js";
 
+
 /* =============================
    Scene Setup
 ============================= */
@@ -153,23 +154,23 @@ setupSimulationButton(() => {
 ============================= */
 function maybeSendPacket() {
   if (!simulationRunning) return;
-  if (Math.random() > 0.02) return;
+  if (Math.random() > 0.05) return;
 
   const [a, b] = edges[Math.floor(Math.random() * edges.length)];
-
+  console.log(a, b)
   const p1 = new THREE.Vector3().fromBufferAttribute(
     geometry.attributes.position, a
   );
   const p2 = new THREE.Vector3().fromBufferAttribute(
     geometry.attributes.position, b
   );
-
+  console.log(p1, p2)
   packetSystem.spawn(p1, p2);
 }
 
 function animate() {
   requestAnimationFrame(animate);
-
+  packetSystem.update()
   maybeSendPacket();
 
   renderer.render(scene, camera);
