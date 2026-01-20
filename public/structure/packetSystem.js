@@ -8,7 +8,7 @@ export class PacketSystem {
   }
 
   spawn(start, end) {
-    const packet = new Packet(this.idCount, start, end, end, start, end);
+    const packet = new Packet(this.idCount, start, end, start, end);
     this.idCount += 1;
     this.scene.add(packet.mesh);
     this.packets.push(packet);
