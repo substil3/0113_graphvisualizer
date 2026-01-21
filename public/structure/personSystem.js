@@ -15,8 +15,7 @@ export function createPeople(count = 30) {
     people[i] = new Person(
       i,
       faker.person.fullName(),
-    );
-  }
+    );}
 
   return people;
 }

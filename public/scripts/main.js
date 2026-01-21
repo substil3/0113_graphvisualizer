@@ -10,7 +10,7 @@ import { generateConnectedGraph } from "./graph.js";
 import { setupSimulationButton } from "./ui.js";
 import { createPeople } from "../structure/personSystem.js";
 import { PacketSystem } from "../structure/packetSystem.js";
-
+import { NetworkSystem } from "../structure/networkSystem.js";
 
 /* =============================
    Scene Setup
@@ -23,16 +23,15 @@ const { scene, camera, renderer } = createScene();
 const people = createPeople();
 
 /* =============================
-   Setup Simulation - Generate Nodes and Graph, Create Packet
+   Setup Backend Info - Init Network properties, Generate Nodes and Graph, Create Packet
 ============================= */
+
 const {points, geometry, gridNodes} = createNodes(people);
 const edges = generateConnectedGraph(gridNodes);
-const packetSystem = new PacketSystem(scene); //TODO
-scene.add(points);
-
 const selectedAttr = geometry.attributes.selected;
 const positionAttr = geometry.attributes.position;
 
+scene.add(points);
 for (const edge of edges) {
 
     const startIndex = edge[0];
@@ -49,7 +48,10 @@ for (const edge of edges) {
     logMessage(
       `${people[startIndex].name} and ${people[endIndex].name} is connected.`
     );
-}
+} 
+
+const packetSystem = new PacketSystem(scene); //TODO
+const networkSystem = new NetworkSystem(people, edges, packetSystem)
 
 /* =============================
    Selection Helpers
@@ -141,22 +143,22 @@ enableMovement({
 });
 
 
-
-let simulationRunning = false;
-
 setupSimulationButton(() => {
-  simulationRunning = true;
+  networkSystem.runNetworkSimulation();
   logMessage("simulation running")
 });
 
-/* =============================
-   Render Loop (TODO)
-============================= */
 function maybeSendPacket() {
-  if (!simulationRunning) return;
+  if (!networkSystem.simulationRunning) return;
   if (Math.random() > 0.05) return;
 
-  const [a, b] = edges[Math.floor(Math.random() * edges.length)];
+  //const [a, b] = edges[Math.floor(Math.random() * edges.length)];
+  let a, b;
+  do {
+    a = Math.floor(Math.random() * people.length);
+    b = Math.floor(Math.random() * people.length);
+  } while (a === b)
+
   console.log(a, b)
   const p1 = new THREE.Vector3().fromBufferAttribute(
     geometry.attributes.position, a
@@ -168,9 +170,12 @@ function maybeSendPacket() {
   packetSystem.spawn(p1, p2);
 }
 
+/* =============================
+   Render Loop
+============================= */
 function animate() {
   requestAnimationFrame(animate);
-  packetSystem.update()
+  networkSystem.updatePacketMovement();
   maybeSendPacket();
 
   renderer.render(scene, camera);
