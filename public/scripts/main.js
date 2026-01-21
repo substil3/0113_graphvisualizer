@@ -50,8 +50,8 @@ for (const edge of edges) {
     );
 } 
 
-const packetSystem = new PacketSystem(scene); //TODO
-const networkSystem = new NetworkSystem(people, edges, packetSystem)
+const packetSystem = new PacketSystem(scene, positionAttr); //TODO
+const networkSystem = new NetworkSystem(people, positionAttr, edges, packetSystem)
 
 /* =============================
    Selection Helpers
@@ -159,15 +159,13 @@ function maybeSendPacket() {
     b = Math.floor(Math.random() * people.length);
   } while (a === b)
 
-  console.log(a, b)
   const p1 = new THREE.Vector3().fromBufferAttribute(
     geometry.attributes.position, a
   );
   const p2 = new THREE.Vector3().fromBufferAttribute(
     geometry.attributes.position, b
   );
-  console.log(p1, p2)
-  packetSystem.spawn(p1, p2);
+  packetSystem.spawn(a, b, p1);
 }
 
 /* =============================

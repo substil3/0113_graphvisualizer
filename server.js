@@ -11,9 +11,6 @@ const __dirname = path.dirname(__filename);
 
 app.use(express.static(path.join(__dirname, "public")));
 
-/* app.get("/api/people", (req, res) => {
-  res.json(people);
-}); */
 
 app.listen(PORT, () => {
   console.log(`http://localhost:${PORT}`);

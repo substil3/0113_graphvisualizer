@@ -1,3 +1,5 @@
+import { logMessage } from "../scripts/console.js";
+
 export class Person {
   constructor(id, name, people) {
     this.id = id;
@@ -89,6 +91,10 @@ export class Person {
 
     this.routingTable.set(destinationId, step);
     return step;
+  }
+
+  recvPacket(from, message) {
+    logMessage(`${this.name} received a message from ${from} : ${message}`)
   }
 
 }
