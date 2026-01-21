@@ -34,7 +34,7 @@ export class PacketSystem {
         curPerson = this.people[p.nextHop];
         p.curHop = p.nextHop;
         p.nextHop = curPerson.getNextHop(p.toNode);        
-      } else {
+      } else if(p.state === ALIVE) {
         this.scene.remove(packet.mesh);
       } 
 
