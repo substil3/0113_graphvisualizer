@@ -35,13 +35,22 @@ export class NetworkSystem {
     this.simulationRunning = true;
   }
 
+  stopNetworkSimulation() {
+    this.simulationRunning = false;
+  }
+
+  runOrStopNetworkSimulation() {
+    if(!this.simulationRunning) this.runNetworkSimulation();
+    else this.stopNetworkSimulation();
+  }
+
   updatePacketMovement() {
     if(!this.simulationRunning) return;
     let packetSystemState = this.packetSystem.update(this.people, this.positionAttr);
-    console.log(packetSystemState["finished_packets"])
+   
     for(let [from, to, message] of packetSystemState["finished_packets"]) {
-      fromPerson = this.people[from];
-      toPerson = this.people[to];
+      let fromPerson = this.people[from];
+      let toPerson = this.people[to];
       toPerson.recvPacket(fromPerson.name, message)
     }
   }

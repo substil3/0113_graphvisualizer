@@ -1,13 +1,9 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 import { logMessage } from "../scripts/console.js";
-
-const INIT = 0;
-const ALIVE = 1;
-const NEED_FORWARD = 2;
-const FINISH = 3;
+import {INIT, ALIVE, NEED_FORWARD, FINISH, REMOVED}  from "./config.js"
 
 export class Packet {
-  constructor(id, fromNode, toNode, initPos = null, message = "dummy", speed = 0.05) {
+  constructor(id, fromNode, toNode, initPos = null, message = "So you do have a mother!", speed = 0.15) {
     this.id = id;
     this.state = INIT;
     this.fromNode = fromNode;
@@ -37,7 +33,7 @@ export class Packet {
 
   make_alive() {
     this.state = ALIVE;
-    console.log(`packet ${this.id} : made to be alive`)
+    //console.log(`packet ${this.id} : made to be alive`)
   }
 
   set_edge_movement(positionAttr) {
@@ -51,21 +47,22 @@ export class Packet {
   }
 
   update() {
-    if(!this.state == ALIVE || !this.pos) return;
+    if(!(this.state === ALIVE) || !this.pos) return;
     this.pos.addScaledVector(this.direction, this.speed);
     this.travelled += this.speed;
 
     if (this.travelled >= this.totalDistance) {
       this.mesh.geometry.setFromPoints([this.nextHopPos]);
       if (this.nextHop === this.toNode) {
-        logMessage(`packet ${this.id} reached destination : ${this.toNode}`)
+        //logMessage(`packet ${this.id} reached destination : ${this.toNode}`)
         this.state = FINISH;
       } else {
         this.state = NEED_FORWARD;
       }
+    } else {
+      this.mesh.geometry.setFromPoints([this.pos]);
     }
 
-    this.mesh.geometry.setFromPoints([this.pos]);
     return true;
   }
 }

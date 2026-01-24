@@ -1,6 +1,7 @@
 import { faker } from "https://cdn.jsdelivr.net/npm/@faker-js/faker/+esm";
 import { Person } from "./person.js";
 
+
 /**
  * Generate a large number of Person objects
  * @param {number} count

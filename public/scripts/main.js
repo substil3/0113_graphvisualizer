@@ -30,8 +30,9 @@ const {points, geometry, gridNodes} = createNodes(people);
 const edges = generateConnectedGraph(gridNodes);
 const selectedAttr = geometry.attributes.selected;
 const positionAttr = geometry.attributes.position;
-
 scene.add(points);
+createLabels(people);
+
 for (const edge of edges) {
 
     const startIndex = edge[0];
@@ -144,8 +145,9 @@ enableMovement({
 
 
 setupSimulationButton(() => {
-  networkSystem.runNetworkSimulation();
-  logMessage("simulation running")
+  networkSystem.runOrStopNetworkSimulation();
+  if (networkSystem.simulationRunning) logMessage("simulation running")
+  else logMessage("simulation stopped")
 });
 
 function maybeSendPacket() {

@@ -1,9 +1,5 @@
 import { Packet } from "./packet.js";
-
-const INIT = 0;
-const ALIVE = 1;
-const NEED_FORWARD = 2;
-const FINISH = 3;
+import {INIT, ALIVE, NEED_FORWARD, FINISH, REMOVED}  from "./config.js";
 
 export class PacketSystem {
   constructor(scene, positionAttr) {
@@ -43,15 +39,16 @@ export class PacketSystem {
 
       } else if(p.state === FINISH) {
         this.scene.remove(p.mesh);
+        console.log([p.fromNode, p.toNode, p.message]);
         finished_packets.push([p.fromNode, p.toNode, p.message]);
+        p.state = REMOVED;
       } 
 
       p.update(this.positionAttr);
     }
 
-
-    this.packets = this.packets.filter(packet => {
-      return packet.state != FINISH;
+    this.packets = this.packets.filter(p => {
+      return p.state != REMOVED;
     });
 
     return {
