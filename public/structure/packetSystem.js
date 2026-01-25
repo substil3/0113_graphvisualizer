@@ -1,5 +1,6 @@
 import { Packet } from "./packet.js";
-import {INIT, ALIVE, NEED_FORWARD, FINISH, REMOVED}  from "./config.js";
+import { INIT, ALIVE, NEED_FORWARD, FINISH, REMOVED }  from "./config.js";
+
 
 export class PacketSystem {
   constructor(scene, positionAttr) {
@@ -9,8 +10,8 @@ export class PacketSystem {
     this.idCount = 0;
   }
 
-  spawn(start, end, initPos = null) {
-    const packet = new Packet(this.idCount, start, end, initPos);
+  spawn(start, end, initPos = null, message = "So you do have a mother!", type = "REQ") {
+    const packet = new Packet(this.idCount, start, end, initPos, message, type);
     this.idCount += 1;
     this.scene.add(packet.mesh);
     this.packets.push(packet);
@@ -40,7 +41,7 @@ export class PacketSystem {
       } else if(p.state === FINISH) {
         this.scene.remove(p.mesh);
         console.log([p.fromNode, p.toNode, p.message]);
-        finished_packets.push([p.fromNode, p.toNode, p.message]);
+        finished_packets.push([p.fromNode, p.toNode, p.message, p.type]);
         p.state = REMOVED;
       } 
 

@@ -1,5 +1,6 @@
 import { logMessage } from "../scripts/console.js";
 import { bfs, reconstructNextHop } from "./routing.js"
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
 export class NetworkSystem {
   constructor(people, positionAttr, edges, packetSystem) {
@@ -8,14 +9,15 @@ export class NetworkSystem {
     this.edges = edges;
     this.packetSystem = packetSystem;
     this.getInitialRoutingTables = true;
-
-    /* =============================
-      init overall network system
-    ============================= */
     if (this.getInitialRoutingTables) 
       this.initRoutingTables();
 
     this.simulationRunning = false;
+    this.clock = 0;
+
+    this.msgs_to_send = []
+    this.sentPacketNumber = 0;;
+    this.receivedPacketNumber = 0;
   }
 
   initRoutingTables() {
@@ -48,10 +50,39 @@ export class NetworkSystem {
     if(!this.simulationRunning) return;
     let packetSystemState = this.packetSystem.update(this.people, this.positionAttr);
    
-    for(let [from, to, message] of packetSystemState["finished_packets"]) {
+    for(let [from, to, message, type] of packetSystemState["finished_packets"]) {
       let fromPerson = this.people[from];
       let toPerson = this.people[to];
-      toPerson.recvPacket(fromPerson.name, message)
+      toPerson.notifyPacketReceived(from, fromPerson.name, message, type);
+      this.receivedPacketNumber += 1;
     }
+  }
+
+  updatePeople() {
+    for(let person of this.people) {
+      let personInfo = person.update();
+      for(let [to, msg, type] of personInfo["msgs_to_send"]) {
+        this.msgs_to_send.push([person.id, to, msg, type]);
+      }
+    }
+  }
+
+  sendAllReservedPackets() {
+    for(let [from, to, msg, type] of this.msgs_to_send) {
+      let initPos = new THREE.Vector3().fromBufferAttribute(this.positionAttr, from);
+      this.packetSystem.spawn(from, to, initPos, msg, type)
+      this.sentPacketNumber += 1;
+    } this.msgs_to_send = []
+  }
+
+  updateClock() {
+    this.clock += (this.simulationRunning);
+  }
+
+  update() {
+    this.updatePacketMovement();
+    this.updatePeople();
+    this.sendAllReservedPackets();
+    this.updateClock();
   }
 }

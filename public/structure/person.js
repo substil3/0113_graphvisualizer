@@ -9,6 +9,14 @@ export class Person {
     
     // destinationId -> nextHopId
     this.routingTable = new Map();
+    this.msgs_received = []
+    this.msgs_to_send = []
+
+    this.default_req_message = "So you do have a mother!";
+    this.default_ack_message = "Yes. I have literally two mothers.";
+    this.default_virus_message = "Oops! You Are Infected." //TODO
+
+    this.clock = 0;
   }
 
   connect(otherId) {
@@ -23,12 +31,6 @@ export class Person {
     return this.routingTable.get(destinationId);
   }
 
-  /**
-   * Decide and forward packet to next hop
-   * @param {Packet} packet
-   * @param {Array<THREE.Vector3>} positions
-   * @param {PacketSystem} packetSystem
-   */
   forwardPacket(packet, positions, packetSystem) {
     const destinationId = packet.toNode;
     if (this.id === destinationId) {
@@ -93,8 +95,34 @@ export class Person {
     return step;
   }
 
-  recvPacket(from, message) {
-    logMessage(`${this.name} received a message from ${from} : ${message}`)
+  notifyPacketReceived(senderId, senderName, message) {
+    logMessage(`${this.name} received a message from ${senderName} : ${message}`)
+    this.msgs_received.push([senderId, message]);
+
+    if(message == this.default_req_message) {
+      this.notifyPacketToSend(senderId, this.default_ack_message, "ACK");
+    }
+  }
+
+  notifyPacketToSend(to, message, type = "REQ") {
+    this.msgs_to_send.push([to, message, type])
+    console.log(to, message, type)
+  }
+
+  updateClock() {
+    this.clock += 1;
+  }
+
+  update() {
+    this.msgs_received = []
+    let msgs_to_send = [...this.msgs_to_send]
+    this.msgs_to_send = []
+    
+    this.updateClock();
+    
+    return {
+      "msgs_to_send" : msgs_to_send
+    }
   }
 
 }

@@ -1,9 +1,12 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 import { logMessage } from "../scripts/console.js";
 import {INIT, ALIVE, NEED_FORWARD, FINISH, REMOVED}  from "./config.js"
+import { loadConfig } from "./config.js";
+
+const config = await loadConfig();
 
 export class Packet {
-  constructor(id, fromNode, toNode, initPos = null, message = "So you do have a mother!", speed = 0.15) {
+  constructor(id, fromNode, toNode, initPos = null, message, type, speed = 0.05) {
     this.id = id;
     this.state = INIT;
     this.fromNode = fromNode;
@@ -11,6 +14,7 @@ export class Packet {
     this.curHop = fromNode;
     this.nextHop = null;
     this.message = message;
+    this.type = type;
 
     /* =======================================================
       for unit edge movement (should be reset when forwarded)
@@ -23,7 +27,7 @@ export class Packet {
 
     const geometry = new THREE.BufferGeometry().setFromPoints([this.pos]);
     const material = new THREE.PointsMaterial({
-      color: 0xff4444,
+      color: this.type === "REQ" ? config.REQ_COLOR : config.ACK_COLOR,
       size: 6,
       sizeAttenuation: false
     });

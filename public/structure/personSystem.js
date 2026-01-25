@@ -6,7 +6,7 @@ import { Person } from "./person.js";
  * Generate a large number of Person objects
  * @param {number} count
  */
-export function createPeople(count = 30) {
+export function createPeople(count = 50) {
   // Optional: deterministic output
   faker.seed(Math.random()*40000);
 

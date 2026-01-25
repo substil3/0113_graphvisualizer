@@ -7,10 +7,13 @@ import { enableMovement } from "./movement.js";
 import { createLabels, updateLabels } from "./labels.js";
 import { logMessage } from "./console.js";
 import { generateConnectedGraph } from "./graph.js";
-import { setupSimulationButton } from "./ui.js";
+import { setupSimulationButton, updateSimulationValues } from "./ui.js";
 import { createPeople } from "../structure/personSystem.js";
 import { PacketSystem } from "../structure/packetSystem.js";
 import { NetworkSystem } from "../structure/networkSystem.js";
+import { loadConfig } from "./config.js";
+
+const config = await loadConfig();
 
 /* =============================
    Scene Setup
@@ -152,7 +155,7 @@ setupSimulationButton(() => {
 
 function maybeSendPacket() {
   if (!networkSystem.simulationRunning) return;
-  if (Math.random() > 0.05) return;
+  if (Math.random() > config.SIMULATION_PACKET_SPAWN_PROBABILITY) return;
 
   //const [a, b] = edges[Math.floor(Math.random() * edges.length)];
   let a, b;
@@ -161,13 +164,8 @@ function maybeSendPacket() {
     b = Math.floor(Math.random() * people.length);
   } while (a === b)
 
-  const p1 = new THREE.Vector3().fromBufferAttribute(
-    geometry.attributes.position, a
-  );
-  const p2 = new THREE.Vector3().fromBufferAttribute(
-    geometry.attributes.position, b
-  );
-  packetSystem.spawn(a, b, p1);
+  let pa = people[a];
+  pa.notifyPacketToSend(b, pa.default_req_message);
 }
 
 /* =============================
@@ -175,10 +173,15 @@ function maybeSendPacket() {
 ============================= */
 function animate() {
   requestAnimationFrame(animate);
-  networkSystem.updatePacketMovement();
+  networkSystem.update();
   maybeSendPacket();
 
   renderer.render(scene, camera);
+  updateSimulationValues({
+    "clock" : networkSystem.clock,
+    "sentPacketNumber" : networkSystem.sentPacketNumber,
+    "receivedPacketNumber" : networkSystem.receivedPacketNumber,
+  });
 }
 
 animate();
