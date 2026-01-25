@@ -17,6 +17,8 @@ export class Person {
     this.default_virus_message = "Oops! You Are Infected." //TODO
 
     this.clock = 0;
+
+    this.state = "ALIVE" // TODO
   }
 
   connect(otherId) {
