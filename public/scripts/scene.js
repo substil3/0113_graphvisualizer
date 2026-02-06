@@ -24,3 +24,13 @@ export function createScene() {
 
   return { scene, camera, renderer };
 }
+
+export function addEdgeOnScene(p1, p2) {
+  const geometry = new THREE.BufferGeometry().setFromPoints([
+    p1.clone(),
+    p2.clone()
+  ]);
+
+  const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+  return new THREE.Line(geometry, material);
+}

@@ -1,6 +1,6 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 import { logMessage } from "../scripts/console.js";
-import {INIT, ALIVE, NEED_FORWARD, FINISH, REMOVED}  from "./config.js"
+import {INIT, ALIVE, NEED_FORWARD, WAIT_SEND, FINISH, ABORT, REMOVED}  from "./config.js"
 import { loadConfig } from "./config.js";
 
 const config = await loadConfig();
@@ -25,6 +25,9 @@ export class Packet {
     this.curHopPos = null;
     this.nextHopPos = null;
 
+    this.waitingTimeInterval = 0;
+    this.totalWaitingTime = 0;
+
     const geometry = new THREE.BufferGeometry().setFromPoints([this.pos]);
     const material = new THREE.PointsMaterial({
       color: this.type === "REQ" ? config.REQ_COLOR : config.ACK_COLOR,
@@ -36,8 +39,21 @@ export class Packet {
   }
 
   make_alive() {
+    this.waitingTimeInterval = 0;
+    this.totalWaitingTime = 0;
     this.state = ALIVE;
     //console.log(`packet ${this.id} : made to be alive`)
+  }
+
+  make_abort() {
+    this.state = ABORT;
+    //console.log(`packet ${this.id} : aborted due to timeout`) 
+  }
+
+  init_waiting_timer() {
+    this.waitingTimeInterval = 0;
+    this.totalWaitingTime = 0;
+    this.state = WAIT_SEND;
   }
 
   set_edge_movement(positionAttr) {
@@ -51,7 +67,14 @@ export class Packet {
   }
 
   update() {
-    if(!(this.state === ALIVE) || !this.pos) return;
+    if(this.state === WAIT_SEND) {
+      this.waitingTimeInterval += 1;
+      this.totalWaitingTime += 1;
+    }
+
+    if(!(this.state === ALIVE) || !this.pos) 
+      return;
+
     this.pos.addScaledVector(this.direction, this.speed);
     this.travelled += this.speed;
 

@@ -1,12 +1,15 @@
 import { logMessage } from "../scripts/console.js";
 import { bfs, reconstructNextHop } from "./routing.js"
+import "./edges.js"
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
 export class NetworkSystem {
-  constructor(people, positionAttr, edges, packetSystem) {
+  constructor(people, positionAttr, edgePoints, packetSystem) {
     this.people = people;
     this.positionAttr = positionAttr;
-    this.edges = edges;
+    this.edgePoints = edgePoints;
+    this.edges = []
+    this.initEdgeObjectsFromEdgePoints();
     this.packetSystem = packetSystem;
     this.getInitialRoutingTables = true;
     if (this.getInitialRoutingTables) 
@@ -18,6 +21,15 @@ export class NetworkSystem {
     this.msgs_to_send = []
     this.sentPacketNumber = 0;;
     this.receivedPacketNumber = 0;
+  }
+
+  initEdgeObjectsFromEdgePoints() {
+    for (const [from, to] of this.edgePoints) {
+      this.edges.push(
+        new Edge(
+          from, to
+        ))
+    }
   }
 
   initRoutingTables() {

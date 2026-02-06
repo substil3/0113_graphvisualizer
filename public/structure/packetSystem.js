@@ -1,5 +1,5 @@
 import { Packet } from "./packet.js";
-import { INIT, ALIVE, NEED_FORWARD, FINISH, REMOVED }  from "./config.js";
+import { INIT, ALIVE, NEED_FORWARD, WAIT_SEND, FINISH, REMOVED, ABORT }  from "./config.js";
 
 
 export class PacketSystem {
@@ -30,20 +30,42 @@ export class PacketSystem {
       if(p.state === INIT) {
         let curPerson = people[p.fromNode];
         p.nextHop = curPerson.getNextHop(p.toNode);
-        p.make_alive();   p.set_edge_movement(this.positionAttr);
+        if(isEdgeNotBusy(p.curHop, p.nextHop)) { //TODO
+          p.make_alive();   
+          notifyEdgeBusy(p.curHop, p.nextHop);
+          p.set_edge_movement(this.positionAttr); 
+        } else {
+          p.init_waiting_timer();
+        }
 
       } else if(p.state === NEED_FORWARD) {
         let curPerson = people[p.nextHop];
         p.curHop = p.nextHop;
         p.nextHop = curPerson.getNextHop(p.toNode);      
-        p.make_alive();   p.set_edge_movement(this.positionAttr); 
-
-      } else if(p.state === FINISH) {
+        if(isEdgeNotBusy(p.curHop, p.nextHop)) { //TODO
+          p.make_alive();   
+          notifyEdgeBusy(p.curHop, p.nextHop);
+          p.set_edge_movement(this.positionAttr); 
+        } else {
+          p.init_waiting_timer();
+        }
+        
+      } else if(p.state === WAIT_SEND) {
+        if(p.totalWaitingTime >= config["PACKET_WAITING_TIMEOUT"]) {
+          p.make_abort();
+          continue;
+        } if(p.waitingTimeInterval >= config["PACKET_CHECK_BUSY_INTERVAL"]) {
+          p.init_waiting_timer();
+        }
+      }
+      else if(p.state === FINISH) {
         this.scene.remove(p.mesh);
         console.log([p.fromNode, p.toNode, p.message]);
         finished_packets.push([p.fromNode, p.toNode, p.message, p.type]);
         p.state = REMOVED;
-      } 
+      } else if(p.state === ABORT) {
+        p.state = REMOVED;
+      }
 
       p.update(this.positionAttr);
     }

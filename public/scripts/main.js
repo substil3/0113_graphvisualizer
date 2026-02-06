@@ -1,8 +1,7 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-import { createScene } from "./scene.js";
+import { createScene, addEdgeOnScene } from "./scene.js";
 import { createNodes } from "./nodes.js";
-import { createEdge } from "./edges.js";
 import { enableMovement } from "./movement.js";
 import { createLabels, updateLabels } from "./labels.js";
 import { logMessage } from "./console.js";
@@ -47,7 +46,7 @@ for (const edge of edges) {
     const p1 = new THREE.Vector3().fromBufferAttribute(positionAttr, startIndex);
     const p2 = new THREE.Vector3().fromBufferAttribute(positionAttr, endIndex);
 
-    scene.add(createEdge(p1, p2));
+    scene.add(addEdgeOnScene(p1, p2));
 
     logMessage(
       `${people[startIndex].name} and ${people[endIndex].name} is connected.`
@@ -124,7 +123,7 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
     const p1 = new THREE.Vector3().fromBufferAttribute(positionAttr, selectedIndex);
     const p2 = new THREE.Vector3().fromBufferAttribute(positionAttr, clickedIndex);
 
-    scene.add(createEdge(p1, p2));
+    scene.add(addEdgeOnScene(p1, p2));
 
     logMessage(
       `${people[selectedIndex].name} and ${people[clickedIndex].name} is connected.`
