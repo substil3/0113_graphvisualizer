@@ -59,7 +59,9 @@ export class PacketSystem {
         
       } else if(p.state === WAIT_SEND) {
 
-        let curPerson = people[p.curHop];
+        // wait if the edge is still busy (unit waiting time)
+        // next hop is already defined by the forwarding function before entering to WAIT_SEND state
+        let curPerson = people[p.curHop]; 
         let nextPerson = people[p.nextHop];
         let isForwarded = curPerson.forwardPacketIfNotBusy(p, this.positionAttr);
         if(isForwarded) {
@@ -68,7 +70,6 @@ export class PacketSystem {
         }
 
         // wait if the edge is still busy (unit waiting time)
-
         if(p.totalWaitingTime >= config["PACKET_WAITING_TIMEOUT"]) {
           p.make_abort();
           continue;

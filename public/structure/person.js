@@ -19,7 +19,7 @@ export class Person {
     this.default_virus_message = "Oops! You Are Infected." //TODO
 
     this.clock = 0;
-    this.type = (Math.random() > 0.0 ? "NORMAL" : "NORMAL");
+    this.type = (Math.random() > 0 ? "NORMAL" : "MALICIOUS");
     this.state = "ALIVE"
 
   }
@@ -50,7 +50,7 @@ export class Person {
   }
 
   forwardPacketIfNotBusy(p, positionAttr) {
-    if(this.state != "ALIVE") return;
+    if(this.state != "ALIVE") return false;
     
     if(p.curHop != this.id) 
       throw Error("current hop id not fit with person id");
