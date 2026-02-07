@@ -6,7 +6,7 @@ import { loadConfig } from "./config.js";
 const config = await loadConfig();
 
 export class Packet {
-  constructor(id, fromNode, toNode, initPos = null, message, type, speed = 0.05) {
+  constructor(id, fromNode, toNode, initPos = null, message, type, speed = 0.08) {
     this.id = id;
     this.state = INIT;
     this.fromNode = fromNode;
@@ -42,36 +42,37 @@ export class Packet {
     this.waitingTimeInterval = 0;
     this.totalWaitingTime = 0;
     this.state = ALIVE;
-    //console.log(`packet ${this.id} : made to be alive`)
+    console.log(`packet ${this.id} : made to be alive`)
   }
 
   make_abort() {
     this.state = ABORT;
-    //console.log(`packet ${this.id} : aborted due to timeout`) 
+    console.log(`packet ${this.id} : aborted due to timeout`) 
   }
 
-  init_waiting_timer() {
+  initWaiting() {
     this.waitingTimeInterval = 0;
-    this.totalWaitingTime = 0;
     this.state = WAIT_SEND;
   }
 
-  set_edge_movement(positionAttr) {
+  wait_unit_time() {
+    this.waitingTimeInterval += 1;
+    this.totalWaitingTime += 1;
+  }
+
+  setEdgeMovement(positionAttr) {
     this.travelled = 0;
     this.curHopPos = new THREE.Vector3().fromBufferAttribute(positionAttr, this.curHop);
     this.nextHopPos = new THREE.Vector3().fromBufferAttribute(positionAttr, this.nextHop);
     
     this.direction = this.nextHopPos ? this.nextHopPos.clone().sub(this.curHopPos).normalize() : null;
     this.totalDistance = this.nextHopPos ? this.curHopPos.distanceTo(this.nextHopPos) : null;
-    //logMessage(`packet ${this.id} forwarded to ${this.nextHop}`);
   }
 
   update() {
-    if(this.state === WAIT_SEND) {
-      this.waitingTimeInterval += 1;
-      this.totalWaitingTime += 1;
-    }
-
+    if(this.state === WAIT_SEND) 
+      this.wait_unit_time();
+  
     if(!(this.state === ALIVE) || !this.pos) 
       return;
 

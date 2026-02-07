@@ -12,6 +12,4 @@ export class Edge {
   markAsNotBusy() {
     this.busy = false;
   }
-
-  
 }

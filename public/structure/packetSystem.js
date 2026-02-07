@@ -1,6 +1,8 @@
 import { Packet } from "./packet.js";
 import { INIT, ALIVE, NEED_FORWARD, WAIT_SEND, FINISH, REMOVED, ABORT }  from "./config.js";
+import { loadConfig } from "./config.js";
 
+const config = await loadConfig();
 
 export class PacketSystem {
   constructor(scene, positionAttr) {
@@ -19,7 +21,8 @@ export class PacketSystem {
 
   update(people) {
 
-    let finished_packets = []
+    let finished_packets = [];
+    let aborted_packets = [];
 
     /* =============================
       update each packet info : 
@@ -27,43 +30,65 @@ export class PacketSystem {
       move to next hop else
     ============================= */
     for (let p of this.packets) {
+
       if(p.state === INIT) {
         let curPerson = people[p.fromNode];
         p.nextHop = curPerson.getNextHop(p.toNode);
-        if(isEdgeNotBusy(p.curHop, p.nextHop)) { //TODO
-          p.make_alive();   
-          notifyEdgeBusy(p.curHop, p.nextHop);
-          p.set_edge_movement(this.positionAttr); 
-        } else {
-          p.init_waiting_timer();
+        let isForwarded = curPerson.forwardPacketIfNotBusy(p, this.positionAttr)
+
+        // notify the edge to be busy to next hop person
+        // this corresponds to slight voltage change of each person's carrier in real environment
+        if(isForwarded) {
+          people[p.nextHop].notifyEdgeBusy(p.fromNode);
         }
 
       } else if(p.state === NEED_FORWARD) {
+        
         let curPerson = people[p.nextHop];
+        let prevPerson = people[p.curHop];
+        curPerson.notifyEdgeNotBusy(p.curHop);
+        prevPerson.notifyEdgeNotBusy(p.nextHop);
+
         p.curHop = p.nextHop;
         p.nextHop = curPerson.getNextHop(p.toNode);      
-        if(isEdgeNotBusy(p.curHop, p.nextHop)) { //TODO
-          p.make_alive();   
-          notifyEdgeBusy(p.curHop, p.nextHop);
-          p.set_edge_movement(this.positionAttr); 
-        } else {
-          p.init_waiting_timer();
+        let isForwarded = curPerson.forwardPacketIfNotBusy(p, this.positionAttr);
+
+        if(isForwarded) {
+          people[p.nextHop].notifyEdgeBusy(p.curHop);
         }
         
       } else if(p.state === WAIT_SEND) {
+
+        let curPerson = people[p.curHop];
+        let nextPerson = people[p.nextHop];
+        let isForwarded = curPerson.forwardPacketIfNotBusy(p, this.positionAttr);
+        if(isForwarded) {
+          nextPerson.notifyEdgeBusy(p.curHop);
+          continue;
+        }
+
+        // wait if the edge is still busy (unit waiting time)
+
         if(p.totalWaitingTime >= config["PACKET_WAITING_TIMEOUT"]) {
           p.make_abort();
           continue;
         } if(p.waitingTimeInterval >= config["PACKET_CHECK_BUSY_INTERVAL"]) {
-          p.init_waiting_timer();
+          p.initWaiting();
         }
       }
+
       else if(p.state === FINISH) {
+        let curPerson = people[p.nextHop];
+        let prevPerson = people[p.curHop];
+        curPerson.notifyEdgeNotBusy(p.curHop);
+        prevPerson.notifyEdgeNotBusy(p.nextHop); 
+
         this.scene.remove(p.mesh);
         console.log([p.fromNode, p.toNode, p.message]);
         finished_packets.push([p.fromNode, p.toNode, p.message, p.type]);
         p.state = REMOVED;
       } else if(p.state === ABORT) {
+        aborted_packets.push([p.fromNode, p.toNode, p.message, p.type]);
         p.state = REMOVED;
       }
 
@@ -75,7 +100,8 @@ export class PacketSystem {
     });
 
     return {
-      "finished_packets" : finished_packets
+      "finished_packets" : finished_packets,
+      "aborted_packets" : aborted_packets
     }
   }
 }

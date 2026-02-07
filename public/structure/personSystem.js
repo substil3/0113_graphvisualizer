@@ -1,12 +1,7 @@
 import { faker } from "https://cdn.jsdelivr.net/npm/@faker-js/faker/+esm";
 import { Person } from "./person.js";
 
-
-/**
- * Generate a large number of Person objects
- * @param {number} count
- */
-export function createPeople(count = 50) {
+export function createPeople(count = 80) {
   // Optional: deterministic output
   faker.seed(Math.random()*40000);
 

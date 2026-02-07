@@ -1,6 +1,6 @@
 import { logMessage } from "../scripts/console.js";
 import { bfs, reconstructNextHop } from "./routing.js"
-import "./edges.js"
+import { Edge } from "./edges.js"
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
 export class NetworkSystem {
@@ -18,9 +18,10 @@ export class NetworkSystem {
     this.simulationRunning = false;
     this.clock = 0;
 
-    this.msgs_to_send = []
-    this.sentPacketNumber = 0;;
+    this.msgs_to_send = [];
+    this.sentPacketNumber = 0;
     this.receivedPacketNumber = 0;
+    this.abortedPacketNumber = 0;
   }
 
   initEdgeObjectsFromEdgePoints() {
@@ -68,13 +69,20 @@ export class NetworkSystem {
       toPerson.notifyPacketReceived(from, fromPerson.name, message, type);
       this.receivedPacketNumber += 1;
     }
+
+    for(let [from, to, message, type] of packetSystemState["aborted_packets"]) {
+      // TODO (let fromPerson to be notifyed that packet is aborted)
+      this.abortedPacketNumber += 1;
+    }
   }
 
   updatePeople() {
     for(let person of this.people) {
       let personInfo = person.update();
-      for(let [to, msg, type] of personInfo["msgs_to_send"]) {
-        this.msgs_to_send.push([person.id, to, msg, type]);
+      if(personInfo) {
+        for(let [to, msg, type] of personInfo["msgs_to_send"]) {
+          this.msgs_to_send.push([person.id, to, msg, type]);
+        }
       }
     }
   }

@@ -180,6 +180,7 @@ function animate() {
     "clock" : networkSystem.clock,
     "sentPacketNumber" : networkSystem.sentPacketNumber,
     "receivedPacketNumber" : networkSystem.receivedPacketNumber,
+    "abortedPacketNumber" : networkSystem.abortedPacketNumber,
   });
 }
 

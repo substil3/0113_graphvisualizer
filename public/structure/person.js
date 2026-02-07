@@ -1,10 +1,12 @@
 import { logMessage } from "../scripts/console.js";
 
+
 export class Person {
   constructor(id, name, people) {
     this.id = id;
     this.name = name;
     this.adjs = new Set();
+    this.busy = {}
     this.people = people;
     
     // destinationId -> nextHopId
@@ -17,12 +19,14 @@ export class Person {
     this.default_virus_message = "Oops! You Are Infected." //TODO
 
     this.clock = 0;
+    this.type = (Math.random() > 0.0 ? "NORMAL" : "NORMAL");
+    this.state = "ALIVE"
 
-    this.state = "ALIVE" // TODO
   }
 
   connect(otherId) {
     this.adjs.add(otherId);
+    this.busy[otherId] = false
   }
 
   setRoute(destinationId, nextHopId) {
@@ -32,6 +36,91 @@ export class Person {
   getNextHop(destinationId) {
     return this.routingTable.get(destinationId);
   }
+
+  isEdgeNotBusy(hop) {
+    return !this.busy[hop];
+  }
+
+  notifyEdgeBusy(hop) {
+    this.busy[hop] = true;
+  }
+
+  notifyEdgeNotBusy(hop) {
+    this.busy[hop] = false;
+  }
+
+  forwardPacketIfNotBusy(p, positionAttr) {
+    if(this.state != "ALIVE") return;
+    
+    if(p.curHop != this.id) 
+      throw Error("current hop id not fit with person id");
+
+    if(this.isEdgeNotBusy(p.nextHop)) { 
+
+      if(this.type == "MALICIOUS") {
+        if(Math.random() > 0.5) {
+          p.type = "VIRUS";
+          p.message = this.default_virus_message;
+          p.speed *= 2;
+        }
+      }
+
+      p.make_alive();  
+      p.setEdgeMovement(positionAttr); 
+      this.notifyEdgeBusy(p.nextHop);
+      return true;
+    } else {
+      p.initWaiting();
+      return false;
+    } 
+  }
+
+  notifyPacketReceived(senderId, senderName, message, type) {
+    if(this.state != "ALIVE") return;
+
+    logMessage(`${this.name} received a message from ${senderName} : ${message}`)
+    this.msgs_received.push([senderId, message]);
+
+    if(type == "REQ") {
+      this.notifyPacketToSend(senderId, this.default_ack_message, "ACK");
+    }
+
+    if(type == "VIRUS") {
+      this.die(senderName)
+    }
+  }
+
+  die(senderName) {
+    logMessage(`${this.name} died because a malicious virus from ${senderName}`)
+    this.state = "DEAD";
+  }
+
+  notifyPacketToSend(to, message, type = "REQ") {
+    if(this.state != "ALIVE") return;
+
+    this.msgs_to_send.push([to, message, type])
+    console.log(to, message, type)
+  }
+
+  updateClock() {
+    this.clock += 1;
+  }
+
+  update() {
+    if(this.state != "ALIVE") return;
+
+    this.msgs_received = []
+    let msgs_to_send = [...this.msgs_to_send]
+    this.msgs_to_send = []
+    
+    this.updateClock();
+    
+    return {
+      "msgs_to_send" : msgs_to_send
+    }
+  }
+
+
 
   forwardPacket(packet, positions, packetSystem) {
     const destinationId = packet.toNode;
@@ -58,7 +147,6 @@ export class Person {
       endPos
     );
   }
-
   resolveRoute(destinationId, people) {
     if (this.routingTable.has(destinationId)) {
       return this.routingTable.get(destinationId);
@@ -96,35 +184,10 @@ export class Person {
     this.routingTable.set(destinationId, step);
     return step;
   }
-
-  notifyPacketReceived(senderId, senderName, message) {
-    logMessage(`${this.name} received a message from ${senderName} : ${message}`)
-    this.msgs_received.push([senderId, message]);
-
-    if(message == this.default_req_message) {
-      this.notifyPacketToSend(senderId, this.default_ack_message, "ACK");
-    }
-  }
-
-  notifyPacketToSend(to, message, type = "REQ") {
-    this.msgs_to_send.push([to, message, type])
-    console.log(to, message, type)
-  }
-
-  updateClock() {
-    this.clock += 1;
-  }
-
-  update() {
-    this.msgs_received = []
-    let msgs_to_send = [...this.msgs_to_send]
-    this.msgs_to_send = []
-    
-    this.updateClock();
-    
-    return {
-      "msgs_to_send" : msgs_to_send
-    }
-  }
-
 }
+
+
+
+
+
+

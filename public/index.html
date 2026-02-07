@@ -55,6 +55,19 @@
   #startSim:active {
     background: rgba(0, 255, 0, 0.4);
   }
+
+  #metaPanel {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2.4em;      
+    padding: 10px 20px;
+    background: rgba(0,0,0,0.6);
+    color: #0f0;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.2em;
+  }
 </style>
 
 <html lang="en">
@@ -68,39 +81,15 @@
 <body>
   <script type="module" src="./scripts/main.js"></script>
 
-  <div id="console"
-    style="
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 2.4em;        /* ~3 lines (1.2em per line) */
-      padding: 10px 20px;
-      background: rgba(0,0,0,0.6);
-      color: #0f0;
-      font-family: monospace;
-      font-size: 14px;
-      line-height: 1.2em;
-      overflow-y: auto;     /* enables scrolling */
-      white-space: pre-wrap; /* keeps line breaks */
-    "></div>
+  <div id="console"></div>
   <button id="startSim">simulation</button>
 
   <div id="metaPanel">
-    <div class="metaRow" style="
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 2.4em;        /* ~3 lines (1.2em per line) */
-      padding: 10px 20px;
-      background: rgba(0,0,0,0.6);
-      color: #0f0;
-      font-family: monospace;
-      font-size: 14px;
-      line-height: 1.2em;">
+    <div class="metaRow">
       time: <span id="clockValueRow">0</span>
       sent: <span id="sentPacketNumberRow">0</span>
       received: <span id="receivedPacketNumberRow">0</span>
+      aborted: <span id="abortedPacketNumberRow">0</span>
     </div>
 
   </div>
