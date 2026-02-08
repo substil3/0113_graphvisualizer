@@ -22,6 +22,9 @@ export class NetworkSystem {
     this.sentPacketNumber = 0;
     this.receivedPacketNumber = 0;
     this.abortedPacketNumber = 0;
+
+    this.rendered_person_state = {}
+
   }
 
   initEdgeObjectsFromEdgePoints() {
@@ -104,5 +107,15 @@ export class NetworkSystem {
     this.updatePeople();
     this.sendAllReservedPackets();
     this.updateClock();
+    
+    // information for updating scene
+    let render_person_state = {};
+    for(let person of this.people) {
+      render_person_state[person.id] = person.state;
+    }
+
+    return {
+      "render_person_state" : render_person_state
+    }
   }
 }

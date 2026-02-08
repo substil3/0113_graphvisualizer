@@ -24,13 +24,23 @@ export class Packet {
     this.pos = initPos;
     this.curHopPos = null;
     this.nextHopPos = null;
+    switch(this.type) {
+      case "REQ":
+        this.color = config.PACKET_REQ_COLOR; break;
+      case "ACK":
+        this.color = config.PACKET_ACK_COLOR; break;
+      case "VIRUS":
+        this.color = config.PACKET_VIRUS_COLOR; break;
+      default:
+        this.color = config.PACKET_REQ_COLOR; break;
+    }
 
     this.waitingTimeInterval = 0;
     this.totalWaitingTime = 0;
 
     const geometry = new THREE.BufferGeometry().setFromPoints([this.pos]);
     const material = new THREE.PointsMaterial({
-      color: this.type === "REQ" ? config.REQ_COLOR : config.ACK_COLOR,
+      color: this.color,
       size: 6,
       sizeAttenuation: false
     });
@@ -42,12 +52,12 @@ export class Packet {
     this.waitingTimeInterval = 0;
     this.totalWaitingTime = 0;
     this.state = ALIVE;
-    console.log(`packet ${this.id} : made to be alive`)
+    //console.log(`packet ${this.id} : made to be alive`)
   }
 
   make_abort() {
     this.state = ABORT;
-    console.log(`packet ${this.id} : aborted due to timeout`) 
+    //console.log(`packet ${this.id} : aborted due to timeout`) 
   }
 
   initWaiting() {

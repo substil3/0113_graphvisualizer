@@ -1,7 +1,7 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
 import { createScene, addEdgeOnScene } from "./scene.js";
-import { createNodes } from "./nodes.js";
+import { createNodes, updateNodeStateFromNetwork } from "./nodes.js";
 import { enableMovement } from "./movement.js";
 import { createLabels, updateLabels } from "./labels.js";
 import { logMessage } from "./console.js";
@@ -22,7 +22,7 @@ const { scene, camera, renderer } = createScene();
 /* =============================
    Load People (Local Data)
 ============================= */
-const people = createPeople();
+const people = createPeople(config["NUMBER_OF_PERSONS"]);
 
 /* =============================
    Setup Backend Info - Init Network properties, Generate Nodes and Graph, Create Packet
@@ -80,7 +80,7 @@ let selectedIndex = null;
 /* =============================
    Picking Tolerance (Radius-Based)
 ============================= */
-const POINT_SIZE = 12;
+const POINT_SIZE = 15;
 const toleranceRatio = 1.0;
 
 function pointPixelRadiusToWorld(camera, renderer, pixelRadius) {
@@ -113,6 +113,7 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
   if (hits.length === 0) return;
 
   const clickedIndex = hits[0].index;
+  console.log(clickedIndex)
 
   if (selectedIndex === null) {
     selectedIndex = clickedIndex;
@@ -172,15 +173,18 @@ function maybeSendPacket() {
 ============================= */
 function animate() {
   requestAnimationFrame(animate);
+
   networkSystem.update();
+  updateNodeStateFromNetwork(geometry, people);
+
   maybeSendPacket();
 
   renderer.render(scene, camera);
   updateSimulationValues({
-    "clock" : networkSystem.clock,
-    "sentPacketNumber" : networkSystem.sentPacketNumber,
-    "receivedPacketNumber" : networkSystem.receivedPacketNumber,
-    "abortedPacketNumber" : networkSystem.abortedPacketNumber,
+    clock: networkSystem.clock,
+    sentPacketNumber: networkSystem.sentPacketNumber,
+    receivedPacketNumber: networkSystem.receivedPacketNumber,
+    abortedPacketNumber: networkSystem.abortedPacketNumber,
   });
 }
 

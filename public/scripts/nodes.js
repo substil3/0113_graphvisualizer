@@ -40,6 +40,10 @@ export function createNodes(people) {
   }
 
   const positions = new Float32Array(count * 3);
+  const state = new Float32Array(count); // 0 = alive, 1 = dead
+  state.fill(0);
+  const type = new Float32Array(count); // 1 = normal
+  type.fill(config["PERSON_BASE_COLOR"]);
   const selected  = new Float32Array(count);
 
   const {
@@ -102,21 +106,35 @@ export function createNodes(people) {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute("selected", new THREE.BufferAttribute(selected, 1));
+  geometry.setAttribute("type", new THREE.BufferAttribute(type, 1));
+  geometry.setAttribute("state", new THREE.BufferAttribute(state, 1));
 
   const material = new THREE.ShaderMaterial({
     transparent: true,
     uniforms: {
-      baseColor:     { value: new THREE.Color(config.BASE_COLOR) },
-      selectedColor: { value: new THREE.Color(config.SELECTED_COLOR) },
-      size:          { value: config.POINT_SIZE }
+      baseColor:        { value: new THREE.Color(config.PERSON_BASE_COLOR) },
+      deadColor:        { value: new THREE.Color(config.PERSON_DEAD_COLOR) },
+
+      selectedColor:    { value: new THREE.Color(config.PERSON_SELECTED_COLOR) },
+      maliciousColor:   { value: new THREE.Color(config.PERSON_MALICIOUS_COLOR) },
+      infectedColor:   { value: new THREE.Color(config.PERSON_INFECTED_COLOR) },
+      size:             { value: config.POINT_SIZE }
     },
     vertexShader: `
       attribute float selected;
+      attribute float state;
+      attribute float type;
+
       varying float vSelected;
+      varying float vState;
+      varying float vType;
+
       uniform float size;
 
       void main() {
         vSelected = selected;
+        vState = state;
+        vType = type;
         gl_PointSize = size;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
@@ -124,13 +142,41 @@ export function createNodes(people) {
     fragmentShader: `
       uniform vec3 baseColor;
       uniform vec3 selectedColor;
+      uniform vec3 maliciousColor;
+      uniform vec3 infectedColor;
+      uniform vec3 deadColor;
+
       varying float vSelected;
+      varying float vType;
+      varying float vState;
 
       void main() {
         vec2 c = gl_PointCoord - vec2(0.5);
         if (length(c) > 0.5) discard;
 
-        vec3 color = mix(baseColor, selectedColor, vSelected);
+        vec3 aliveColor = baseColor;
+        
+        vec3 color;
+
+        // alive : 0, dead : 1
+        if (vState > 0.99) {
+          color = deadColor;
+        } else {
+          switch(int(vType+0.1)) {
+            case 1:
+              color = baseColor;
+              break;
+            case 2:
+              color = maliciousColor;
+              break;
+            case 3:
+              color = infectedColor;
+              break;
+          }
+        }
+        
+        color = mix(color, selectedColor, vSelected);
+        
         gl_FragColor = vec4(color, 1.0);
       }
     `
@@ -142,4 +188,16 @@ export function createNodes(people) {
     geometry,
     gridNodes: nodes      // grid coordinates (gx, gy)
   };
+}
+
+export function updateNodeStateFromNetwork(geometry, people) {
+  const stateAttr = geometry.attributes.state.array;
+  const typeAttr = geometry.attributes.type.array;
+  for (let i = 0; i < people.length; i++) {
+    stateAttr[i] = people[i].state === "DEAD" ? 1.0 : 0.0;
+    typeAttr[i] = config["PERSON_TYPE_INT_MAPPING"][people[i].type];
+  }
+
+  geometry.attributes.state.needsUpdate = true;
+  geometry.attributes.type.needsUpdate = true;
 }
