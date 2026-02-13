@@ -1,5 +1,5 @@
 import { logMessage } from "../scripts/console.js";
-import { bfs, reconstructNextHop } from "./routing.js"
+import { reconstructNextHop, dijkstra } from "./routing.js"
 import { Edge } from "./edges.js"
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
@@ -36,18 +36,23 @@ export class NetworkSystem {
     }
   }
 
-  initRoutingTables() {
-    for (const source of this.people) {
-      const prev = bfs(source.id, this.people);
-      for (let dest = 0; dest < this.people.length; dest++) {
-        if (dest === source.id) continue;
-        const nextHop = reconstructNextHop(source.id, dest, prev);
-        if (nextHop !== null) {
-          source.setRoute(dest, nextHop);
-        }
-      } console.log(source.routingTable);
+initRoutingTables() {
+  for (const source of this.people) {
+
+    const { prev } = dijkstra(source.id, this.people);
+    for (let dest = 0; dest < this.people.length; dest++) {
+      if (dest === source.id) continue;
+
+      const nextHop = reconstructNextHop(source.id, dest, prev);
+
+      if (nextHop !== null) {
+        source.setRoute(dest, nextHop);
+      }
     }
+
+    //console.log(source.routingTable);
   }
+}
 
   runNetworkSimulation() {
     this.simulationRunning = true;

@@ -20,18 +20,13 @@ const config = await loadConfig();
 const { scene, camera, renderer } = createScene();
 
 /* =============================
-   Load People (Local Data)
-============================= */
-const people = createPeople(config["NUMBER_OF_PERSONS"]);
-
-/* =============================
    Setup Backend Info - Init Network properties, Generate Nodes and Graph, Create Packet
 ============================= */
-
+const people = createPeople(config["NUMBER_OF_PERSONS"]);
 const {points, geometry, gridNodes} = createNodes(people);
-const edges = generateConnectedGraph(gridNodes);
 const selectedAttr = geometry.attributes.selected;
 const positionAttr = geometry.attributes.position;
+const edges = generateConnectedGraph(gridNodes);
 scene.add(points);
 createLabels(people);
 
@@ -39,9 +34,10 @@ for (const edge of edges) {
 
     const startIndex = edge[0];
     const endIndex = edge[1];
+    const weight = edge[2];
     
-    people[startIndex].connect(endIndex)
-    people[endIndex].connect(startIndex)
+    people[startIndex].connect(endIndex, weight)
+    people[endIndex].connect(startIndex, weight)
     
     const p1 = new THREE.Vector3().fromBufferAttribute(positionAttr, startIndex);
     const p2 = new THREE.Vector3().fromBufferAttribute(positionAttr, endIndex);
@@ -59,6 +55,7 @@ const networkSystem = new NetworkSystem(people, positionAttr, edges, packetSyste
 /* =============================
    Selection Helpers
 ============================= */
+let selectedIndex = null;
 function selectNode(index) {
   selectedAttr.array[index] = 1.0;
   selectedAttr.needsUpdate = true;
@@ -75,13 +72,11 @@ function deselectNode(index) {
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-let selectedIndex = null;
-
 /* =============================
    Picking Tolerance (Radius-Based)
 ============================= */
 const POINT_SIZE = 15;
-const toleranceRatio = 1.0;
+const toleranceRatio = 2.0;
 
 function pointPixelRadiusToWorld(camera, renderer, pixelRadius) {
   const viewHeight = camera.top - camera.bottom;
@@ -99,22 +94,69 @@ updatePickingTolerance();
 window.addEventListener("resize", updatePickingTolerance);
 
 /* =============================
-   Pointer Interaction (Left Click)
+   Pointer Interaction
 ============================= */
-renderer.domElement.addEventListener("pointerdown", (event) => {
-  if (event.button !== 0) return; // left mouse only
 
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+const tooltip = document.createElement("div");
+tooltip.style.position = "absolute";
+tooltip.style.pointerEvents = "none";
+tooltip.style.padding = "6px 10px";
+tooltip.style.background = "rgba(0,0,0,0.8)";
+tooltip.style.color = "#fff";
+tooltip.style.fontSize = "12px";
+tooltip.style.borderRadius = "4px";
+tooltip.style.display = "none";
+tooltip.style.whiteSpace = "nowrap";
+document.body.appendChild(tooltip);
+
+
+renderer.domElement.addEventListener("mousemove", (event) => {
+  const rect = renderer.domElement.getBoundingClientRect();
+
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
-  const hits = raycaster.intersectObject(points);
+  const intersects = raycaster.intersectObject(points);
 
-  if (hits.length === 0) return;
+  
+  if (intersects.length > 0) {
+    const index = intersects[0].index;
 
-  const clickedIndex = hits[0].index;
-  console.log(clickedIndex)
+    const person = people[index]; // important: same ordering as geometry
 
+    // ---- Tooltip content ----
+    tooltip.innerHTML = `
+      <b>${person.name}</b><br/>
+      ID: ${person.id}<br/>
+      Type: ${person.type}<br/>
+      State: ${person.state}<br/>
+      Sent: ${person.sent_packets}<br/>
+      Received: ${person.received_packets}<br/>
+      Forwarded: ${person.forwarded_packets}<br/>
+    `;
+    tooltip.style.display = "block";
+
+    // ---- Convert 3D to screen position ----
+    const pos = new THREE.Vector3();
+    pos.fromBufferAttribute(
+      points.geometry.getAttribute("position"),
+      index
+    );
+
+    pos.project(camera);
+
+    const x = (pos.x * 0.5 + 0.5) * window.innerWidth;
+    const y = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+
+    tooltip.style.left = `${x + 3}px`;
+    tooltip.style.top = `${y + 3}px`;
+
+  } else {
+    tooltip.style.display = "none";
+  }
+
+  /* 
   if (selectedIndex === null) {
     selectedIndex = clickedIndex;
     selectNode(clickedIndex);
@@ -134,6 +176,7 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
 
     selectedIndex = null;
   }
+    */
 });
 
 /* =============================
@@ -146,6 +189,9 @@ enableMovement({
   maxZoom: 5.0
 });
 
+/* =============================
+   initialize simulation factors
+============================= */
 
 setupSimulationButton(() => {
   networkSystem.runOrStopNetworkSimulation();
@@ -155,6 +201,7 @@ setupSimulationButton(() => {
 
 function maybeSendPacket() {
   if (!networkSystem.simulationRunning) return;
+  if (networkSystem.sentPacketNumber >= config.SIMULATION_TOTAL_NUMBER_OF_PACKETS) return;
   if (Math.random() > config.SIMULATION_PACKET_SPAWN_PROBABILITY) return;
 
   //const [a, b] = edges[Math.floor(Math.random() * edges.length)];

@@ -109,7 +109,7 @@ export function generateConnectedGraph(
 
   for (const e of validEdges) {
     if (Math.random() < extraEdgeProbability) {
-      edges.push([e.a, e.b]);
+      edges.push([e.a, e.b, gridDistance(nodes[e.a], nodes[e.b])]);
     }
   }
 

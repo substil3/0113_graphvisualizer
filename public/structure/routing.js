@@ -5,7 +5,7 @@ export function bfs(startId, people) {
 
   while (queue.length) {
     const current = queue.shift();
-    for (const neighbor of people[current].adjs) {
+    for (const [neighbor, weight] of people[current].adjs) {
       if (!visited.has(neighbor)) {
         visited.add(neighbor);
         prev.set(neighbor, current);
@@ -15,6 +15,51 @@ export function bfs(startId, people) {
   }
 
   return prev;
+}
+
+export function dijkstra(startId, people) {
+  const dist = new Map();
+  const prev = new Map();
+  const visited = new Set();
+
+  for (let i = 0; i < people.length; i++) {
+    dist.set(i, Infinity);
+  }
+  dist.set(startId, 0);
+
+  while (visited.size < people.length) {
+
+    let current = null;
+    let minDist = Infinity;
+
+    for (let [node, d] of dist) {
+      if (!visited.has(node) && d < minDist) {
+        minDist = d;
+        current = node;
+      }
+    }
+
+    if (current === null) break;
+
+    visited.add(current);
+
+    // Relax edges
+    const neighbors = people[current].adjs;
+
+    for (let i = 0; i < neighbors.length; i++) {
+      const neighbor = neighbors[i][0];
+      const weight = neighbors[i][1];
+
+      const alt = dist.get(current) + weight;
+
+      if (alt < dist.get(neighbor)) {
+        dist.set(neighbor, alt);
+        prev.set(neighbor, current);
+      }
+    }
+  }
+
+  return { dist, prev };
 }
 
 export function reconstructNextHop(start, dest, prev) {

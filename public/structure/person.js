@@ -22,12 +22,15 @@ export class Person {
     this.clock = 0;
     //this.type = (Math.random() > 0.1 ? "NORMAL" : "MALICIOUS");
     this.type = (this.id != 1 ? "NORMAL" : "MALICIOUS");
-    this.state = "ALIVE"
+    this.state = "ALIVE";
 
+    this.sent_packets = 0;
+    this.received_packets = 0;
+    this.forwarded_packets = 0;
   }
 
-  connect(otherId) {
-    this.adjs.add(otherId);
+  connect(otherId, weight) {
+    this.adjs.add([otherId, weight]);
     this.busy[otherId] = false
   }
 
@@ -74,6 +77,9 @@ export class Person {
       p.make_alive();  
       p.setEdgeMovement(positionAttr); 
       this.notifyEdgeBusy(p.nextHop);
+      
+      this.forwarded_packets += 1;
+      
       return true;
     } else {
       p.initWaiting();
@@ -96,6 +102,8 @@ export class Person {
       //this.die(senderName)
       this.infected(senderName)
     }
+
+    this.received_packets += 1;
   }
 
   die(senderName) {
@@ -129,7 +137,8 @@ export class Person {
     }
 
     this.msgs_to_send.push([to, message, type])
-    console.log(to, message, type)
+    //console.log(to, message, type)
+    this.sent_packets += 1;
   }
 
   updateClock() {
@@ -196,7 +205,7 @@ export class Person {
 
       if (current === destinationId) break;
 
-      for (const neighbor of people[current].adjs) {
+      for (const [neighbor, weight] of people[current].adjs) {
         if (!visited.has(neighbor)) {
           visited.add(neighbor);
           prev.set(neighbor, current);

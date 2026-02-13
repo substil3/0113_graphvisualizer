@@ -25,6 +25,7 @@ export async function loadConfig() {
         "INFECTED" : 3
     },
 
+    "SIMULATION_TOTAL_NUMBER_OF_PACKETS" : 500,
     "SIMULATION_PACKET_SPAWN_PROBABILITY" : 0.15,
     "SIMULATION_PACKET_CORRUPTION_PROBABILITY" : 0.01, //TODO
     }
