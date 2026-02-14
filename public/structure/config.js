@@ -18,7 +18,13 @@ export async function loadConfig() {
     "PACKET_WAITING_TIMEOUT" : 1000,
 
     "PERSON_DEAD_STATE_TIME" : 1000,
-    "PERSON_INFECTED_STATE_TIME" : 500
+    "PERSON_INFECTED_STATE_TIME" : 500,
+
+    "PLAYER_INITIAL_COST" : 100,
+    "PLAYER_COST_SEND_PACKET" : 20,
+    "PLAYER_COST_GAIN_FORWARD_PACKET" : 5,
+    "PLAYER_INITIAL_HEALTH" : 3,
+
     }
 
     return config

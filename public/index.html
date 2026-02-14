@@ -1,76 +1,6 @@
 <!DOCTYPE html>
-<style>
-  body {
-    margin: 0;
-    overflow: hidden;
-    background: #111;
-  }
-
-  #console {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 3.6em;
-    padding: 8px 12px;
-    box-sizing: border-box;
-
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    background: rgba(0, 0, 0, 0.6);
-    color: #0f0;
-    font-family: monospace;
-    font-size: 14px;
-    line-height: 1.2em;
-  }
-
-  #consoleText {
-    flex: 1;
-    overflow-y: auto;
-    white-space: pre-wrap;
-  }
-
-  #startSim {
-    height: 2.2em;
-    padding: 0 14px;
-
-    background: rgba(0, 255, 0, 0.1);
-    color: #0f0;
-    border: 1px solid #0f0;
-    border-radius: 3px;
-
-    font-family: monospace;
-    font-size: 13px;
-    cursor: pointer;
-    margin-left: 10px;
-    margin-top: 10px;
-  }
-
-  #startSim:hover {
-    background: rgba(0, 255, 0, 0.25);
-  }
-
-  #startSim:active {
-    background: rgba(0, 255, 0, 0.4);
-  }
-
-  #metaPanel {
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2.4em;      
-    padding: 10px 20px;
-    background: rgba(0,0,0,0.6);
-    color: #0f0;
-    font-family: monospace;
-    font-size: 14px;
-    line-height: 1.2em;
-  }
-</style>
-
 <html lang="en">
+<link rel="stylesheet" href="style.css">
 <head>
   <meta charset="UTF-8" />
   <title>Point-Based Network Graph</title>
@@ -82,7 +12,15 @@
   <script type="module" src="./scripts/main.js"></script>
 
   <div id="console"></div>
-  <button id="startSim">simulation</button>
+  <button id="startSim" class="simButton">Start</button>
+ 
+    <input
+      id="receiverId"
+      class="simForm"
+      placeholder="Target Node ID"
+      min="0"
+    />
+  <button id="sendPacket" class="simButton" type="submit">Send Packet</button> 
 
   <div id="metaPanel">
     <div class="metaRow">

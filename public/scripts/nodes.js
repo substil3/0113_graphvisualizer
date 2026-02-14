@@ -117,7 +117,10 @@ export function createNodes(people) {
 
       selectedColor:    { value: new THREE.Color(config.PERSON_SELECTED_COLOR) },
       maliciousColor:   { value: new THREE.Color(config.PERSON_MALICIOUS_COLOR) },
-      infectedColor:   { value: new THREE.Color(config.PERSON_INFECTED_COLOR) },
+      infectedColor:    { value: new THREE.Color(config.PERSON_INFECTED_COLOR) },
+
+      playerColor:      { value: new THREE.Color(config.PERSON_PLAYER_COLOR) },
+
       size:             { value: config.POINT_SIZE }
     },
     vertexShader: `
@@ -146,6 +149,8 @@ export function createNodes(people) {
       uniform vec3 infectedColor;
       uniform vec3 deadColor;
 
+      uniform vec3 playerColor;
+
       varying float vSelected;
       varying float vType;
       varying float vState;
@@ -163,6 +168,10 @@ export function createNodes(people) {
           color = deadColor;
         } else {
           switch(int(vType+0.1)) {
+            case 0:
+              color = playerColor;
+              break;
+              
             case 1:
               color = baseColor;
               break;

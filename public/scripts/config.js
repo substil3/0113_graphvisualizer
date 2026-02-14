@@ -19,10 +19,14 @@ export async function loadConfig() {
     "PERSON_INFECTED_COLOR" : 0xedc00e,   
     "PERSON_DEAD_COLOR" : 0xe04343,
 
+    "PERSON_PLAYER_COLOR" : 0x42ecff,
+
     "PERSON_TYPE_INT_MAPPING" : {
         "NORMAL" : 1,
         "MALICIOUS"  : 2,
-        "INFECTED" : 3
+        "INFECTED" : 3,
+
+        "PLAYER" : 0
     },
 
     "SIMULATION_TOTAL_NUMBER_OF_PACKETS" : 500,

@@ -41,15 +41,11 @@ export function dijkstra(startId, people) {
 
     if (current === null) break;
 
-    visited.add(current);
+    visited.add(current); 
 
-    // Relax edges
-    const neighbors = people[current].adjs;
-
-    for (let i = 0; i < neighbors.length; i++) {
-      const neighbor = neighbors[i][0];
-      const weight = neighbors[i][1];
-
+    for (let adj of people[current].adjs) {
+      const neighbor = adj[0];
+      const weight = adj[1];
       const alt = dist.get(current) + weight;
 
       if (alt < dist.get(neighbor)) {
@@ -58,7 +54,6 @@ export function dijkstra(startId, people) {
       }
     }
   }
-
   return { dist, prev };
 }
 

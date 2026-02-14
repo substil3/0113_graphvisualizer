@@ -6,7 +6,7 @@ import { enableMovement } from "./movement.js";
 import { createLabels, updateLabels } from "./labels.js";
 import { logMessage } from "./console.js";
 import { generateConnectedGraph } from "./graph.js";
-import { setupSimulationButton, updateSimulationValues } from "./ui.js";
+import { setupSendPacketForm, setupSimulationButton, updateSimulationValues } from "./ui.js";
 import { createPeople } from "../structure/personSystem.js";
 import { PacketSystem } from "../structure/packetSystem.js";
 import { NetworkSystem } from "../structure/networkSystem.js";
@@ -119,11 +119,9 @@ renderer.domElement.addEventListener("mousemove", (event) => {
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObject(points);
 
-  
   if (intersects.length > 0) {
     const index = intersects[0].index;
-
-    const person = people[index]; // important: same ordering as geometry
+    const person = people[index]; 
 
     // ---- Tooltip content ----
     tooltip.innerHTML = `
@@ -134,7 +132,10 @@ renderer.domElement.addEventListener("mousemove", (event) => {
       Sent: ${person.sent_packets}<br/>
       Received: ${person.received_packets}<br/>
       Forwarded: ${person.forwarded_packets}<br/>
-    `;
+    ` + (person.type == "PLAYER" ?
+      `Health: ${person.health}<br/>
+       Cost: ${person.cost}<br/>`
+      : "");
     tooltip.style.display = "block";
 
     // ---- Convert 3D to screen position ----
@@ -199,21 +200,10 @@ setupSimulationButton(() => {
   else logMessage("simulation stopped")
 });
 
-function maybeSendPacket() {
-  if (!networkSystem.simulationRunning) return;
-  if (networkSystem.sentPacketNumber >= config.SIMULATION_TOTAL_NUMBER_OF_PACKETS) return;
-  if (Math.random() > config.SIMULATION_PACKET_SPAWN_PROBABILITY) return;
+setupSendPacketForm((to) => {
+  networkSystem.notifyPlayerSendPacket(to);
 
-  //const [a, b] = edges[Math.floor(Math.random() * edges.length)];
-  let a, b;
-  do {
-    a = Math.floor(Math.random() * people.length);
-    b = Math.floor(Math.random() * people.length);
-  } while (a === b)
-
-  let pa = people[a];
-  pa.notifyPacketToSend(b, pa.default_req_message);
-}
+})
 
 /* =============================
    Render Loop
@@ -223,8 +213,6 @@ function animate() {
 
   networkSystem.update();
   updateNodeStateFromNetwork(geometry, people);
-
-  maybeSendPacket();
 
   renderer.render(scene, camera);
   updateSimulationValues({

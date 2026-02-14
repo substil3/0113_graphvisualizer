@@ -64,10 +64,10 @@ export function generateConnectedGraph(
 
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
-      const d = gridDistance(nodes[i], nodes[j]);
-      const edge = { a: i, b: j, d };
+      const dist = gridDistance(nodes[i], nodes[j]);
+      const edge = { a: i, b: j, d: dist};
 
-      if (d <= maxDist) {
+      if (dist <= maxDist) {
         validEdges.push(edge);
       } else {
         invalidEdges.push(edge);
@@ -88,7 +88,7 @@ export function generateConnectedGraph(
 
   for (const e of validEdges) {
     if (uf.union(e.a, e.b)) {
-      edges.push([e.a, e.b]);
+      edges.push([e.a, e.b, e.d]);
       if (edges.length === n - 1) break;
     }
   }
@@ -98,7 +98,7 @@ export function generateConnectedGraph(
   if (edges.length < n - 1) {
     for (const e of invalidEdges) {
       if (uf.union(e.a, e.b)) {
-        edges.push([e.a, e.b]);
+        edges.push([e.a, e.b, e.d]);
         invalidEdgeCount++;
         if (edges.length === n - 1) break;
       }
@@ -109,7 +109,7 @@ export function generateConnectedGraph(
 
   for (const e of validEdges) {
     if (Math.random() < extraEdgeProbability) {
-      edges.push([e.a, e.b, gridDistance(nodes[e.a], nodes[e.b])]);
+      edges.push([e.a, e.b, e.d]);
     }
   }
 

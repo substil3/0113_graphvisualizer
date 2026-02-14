@@ -4,13 +4,12 @@ import { loadConfig } from "./config.js";
 const config = await loadConfig();
 
 export class Person {
-  constructor(id, name, people) {
+  constructor(id, name) {
     this.id = id;
     this.name = name;
     this.adjs = new Set();
     this.busy = {}
-    this.people = people;
-    
+
     this.routingTable = new Map();
     this.msgs_received = []
     this.msgs_to_send = []
@@ -18,15 +17,17 @@ export class Person {
     this.default_req_message = "So you do have a mother!";
     this.default_ack_message = "Yes. I have literally two mothers.";
     this.default_virus_message = "You are an idiot! Hahaha." //TODO
-
+    
     this.clock = 0;
-    //this.type = (Math.random() > 0.1 ? "NORMAL" : "MALICIOUS");
-    this.type = (this.id != 1 ? "NORMAL" : "MALICIOUS");
+    this.type = (Math.random() > 0.2 ? "NORMAL" : "MALICIOUS");
+    //this.type = (this.id != 1 ? "NORMAL" : "MALICIOUS");
     this.state = "ALIVE";
 
     this.sent_packets = 0;
     this.received_packets = 0;
     this.forwarded_packets = 0;
+
+    this.dev_mode = false;
   }
 
   connect(otherId, weight) {
@@ -91,7 +92,7 @@ export class Person {
     if(this.state != "ALIVE") return;
     if(this.type === "MALICIOUS") return;
 
-    logMessage(`${this.name} received a message from ${senderName} : ${message}`)
+    if(this.dev_mode) logMessage(`${this.name} received a message from ${senderName} : ${message}`)
     this.msgs_received.push([senderId, message]);
 
     if(type == "REQ") {
@@ -107,23 +108,22 @@ export class Person {
   }
 
   die(senderName) {
-    logMessage(`${this.name} died due to a malicious virus from ${senderName}`);
+    if(this.dev_mode) logMessage(`${this.name} died due to a malicious virus from ${senderName}`);
     this.state = "DEAD";
     this.clock = 0;
   }
 
   infected(senderName) {
     if(this.type != "INFECTED") {
-      logMessage(`${this.name} is infected due to a malicious virus from ${senderName}`);
+      if(this.dev_mode) logMessage(`${this.name} is infected due to a malicious virus from ${senderName}`);
       this.type = "INFECTED";
     }
-      
     
     this.clock = 0;
   }
 
   revive() {
-    logMessage(`${this.name} just revived`);
+    if(this.dev_mode) logMessage(`${this.name} just revived`);
     this.state = "ALIVE";
     this.type = "NORMAL";
     this.clock = 0;
@@ -150,6 +150,7 @@ export class Person {
   }
 
   update() {
+
     if(this.state != "ALIVE") {
       this.updateClock();
       return;

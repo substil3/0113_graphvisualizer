@@ -2,10 +2,15 @@ import { logMessage } from "../scripts/console.js";
 import { reconstructNextHop, dijkstra } from "./routing.js"
 import { Edge } from "./edges.js"
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+import { loadConfig } from "./config.js";
+
+const config = await loadConfig();
 
 export class NetworkSystem {
   constructor(people, positionAttr, edgePoints, packetSystem) {
     this.people = people;
+    this.player = this.people[this.people.length-1];
+    this.numOfPeople = this.people.length;
     this.positionAttr = positionAttr;
     this.edgePoints = edgePoints;
     this.edges = []
@@ -39,7 +44,7 @@ export class NetworkSystem {
 initRoutingTables() {
   for (const source of this.people) {
 
-    const { prev } = dijkstra(source.id, this.people);
+    const { dist, prev } = dijkstra(source.id, this.people);
     for (let dest = 0; dest < this.people.length; dest++) {
       if (dest === source.id) continue;
 
@@ -50,7 +55,7 @@ initRoutingTables() {
       }
     }
 
-    //console.log(source.routingTable);
+    console.log(source.routingTable);
   }
 }
 
@@ -97,6 +102,9 @@ initRoutingTables() {
 
   sendAllReservedPackets() {
     for(let [from, to, msg, type] of this.msgs_to_send) {
+      if(from < 0 || from > this.numOfPeople-1 || to < 0 || to > this.numOfPeople-1) {
+        logMessage(`invalid id : ${from}, ${to}`);
+      }
       let initPos = new THREE.Vector3().fromBufferAttribute(this.positionAttr, from);
       this.packetSystem.spawn(from, to, initPos, msg, type)
       this.sentPacketNumber += 1;
@@ -107,7 +115,30 @@ initRoutingTables() {
     this.clock += (this.simulationRunning);
   }
 
+  maybeSendPacket() {
+    if (!this.simulationRunning) return;
+    if (this.sentPacketNumber >= config.SIMULATION_TOTAL_NUMBER_OF_PACKETS) return;
+    if (Math.random() > config.SIMULATION_PACKET_SPAWN_PROBABILITY) return;
+
+    //const [a, b] = edges[Math.floor(Math.random() * edges.length)];
+    let a, b;
+    do {
+      a = Math.floor(Math.random() * (this.people.length-1));
+      b = Math.floor(Math.random() * (this.people.length));
+    } while (a === b)
+
+    let pa = this.people[a];
+    pa.notifyPacketToSend(b, pa.default_req_message);
+  }
+
+  notifyPlayerSendPacket(to) {
+    this.player.sendPacket(to);
+  }
+
   update() {
+    if(!this.simulationRunning) return;
+
+    this.maybeSendPacket();
     this.updatePacketMovement();
     this.updatePeople();
     this.sendAllReservedPackets();
