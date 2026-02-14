@@ -13,23 +13,35 @@
 
   <div id="console"></div>
   <button id="startSim" class="simButton">Start</button>
- 
     <input
       id="receiverId"
       class="simForm"
       placeholder="Target Node ID"
       min="0"
     />
-  <button id="sendPacket" class="simButton" type="submit">Send Packet</button> 
+  <button id="sendPacket" class="simButton" type="submit">Send Packet</button>
 
-  <div id="metaPanel">
-    <div class="metaRow">
-      time: <span id="clockValueRow">0</span>
-      sent: <span id="sentPacketNumberRow">0</span>
-      received: <span id="receivedPacketNumberRow">0</span>
-      aborted: <span id="abortedPacketNumberRow">0</span>
-    </div>
-
+<div id="metaPanel">
+  <div class="metaRow">
+    time: <span id="clockValueRow">0</span>
+    sent: <span id="sentPacketNumberRow">0</span>
+    received: <span id="receivedPacketNumberRow">0</span>
+    aborted: <span id="abortedPacketNumberRow">0</span>
   </div>
+
+  <div class="playerRow">
+    Player: <span id="playerNameRow">DummyPlayer</span>
+  </div>
+
+  <div class="playerRow">
+    Health:
+    <div id="playerHealthBar" class="healthBar"></div>
+  </div>
+
+  <div class="playerRow">
+    Cost: <span id="playerCostRow">0</span>
+  </div>
+</div>
+
 </body>
 </html>

@@ -11,6 +11,8 @@ export class Player extends Person {
 
     this.default_req_message = "I'm a Hacker. Who Are You?";
     this.default_ack_message = "Confirmed. You Are Innocent.";
+    this.default_cure_message = `You Are Not Idiot. Don't Kill Yourself. From ${this.name}`
+    this.default_broadcast_message =`You Are Not Idiot. Don't Kill Yourself. From ${this.name}`
 
     this.cost = config.PLAYER_INITIAL_COST;
     this.health = config.PLAYER_INITIAL_HEALTH;
@@ -29,14 +31,13 @@ export class Player extends Person {
       p.make_alive();  
       p.setEdgeMovement(positionAttr); 
       this.notifyEdgeBusy(p.nextHop);
-      
       this.forwarded_packets += 1;
       this.cost += config.PLAYER_COST_GAIN_FORWARD_PACKET;
       return true;
     } else {
       p.initWaiting();
       return false;
-    } 
+    }
   }
 
   notifyPacketReceived(senderId, senderName, message, type) {
@@ -57,6 +58,10 @@ export class Player extends Person {
     this.received_packets += 1;
   }
 
+  costRefill(refill = 1) {
+    this.cost += refill;
+  }
+
   takeDamage(senderName) {
     this.health -= 1;
     if(this.health <= 0) {
@@ -73,11 +78,21 @@ export class Player extends Person {
     this.sent_packets += 1;
   }
 
-  sendPacket(to, message = this.default_req_message, type = "REQ") {
-    if(this.cost < config.PLAYER_COST_SEND_PACKET) {
-      logMessage('insufficient cost to send packet');
+  sendPacket(to, message = this.default_cure_message, type = "CURE") {
+    if(to === this.id) {
+      logMessage('Cannot Send Packet : player itself')
       return;
     }
+    if(this.cost < config.PLAYER_COST_SEND_PACKET) {
+      logMessage('Cannot Send Packet : insufficient cost to send');
+      return;
+    }
+
+    if(type === "CURE")  message = this.default_cure_message;
+    if(type === "REQ")   message = this.default_req_message;
+    if(type === "ACK")   message = this.default_ack_message;
+    if(type === "BROAD") message = this.default_broadcast_message;
+    
     this.cost -= config.PLAYER_COST_SEND_PACKET;
     this.notifyPacketToSend(to, message, type);
   }

@@ -16,11 +16,10 @@ export class Person {
 
     this.default_req_message = "So you do have a mother!";
     this.default_ack_message = "Yes. I have literally two mothers.";
-    this.default_virus_message = "You are an idiot! Hahaha." //TODO
-    
+
     this.clock = 0;
-    this.type = (Math.random() > 0.2 ? "NORMAL" : "MALICIOUS");
-    //this.type = (this.id != 1 ? "NORMAL" : "MALICIOUS");
+    //this.type = (Math.random() > 0.2 ? "NORMAL" : "MALICIOUS");
+    this.type = "NORMAL";
     this.state = "ALIVE";
 
     this.sent_packets = 0;
@@ -64,13 +63,10 @@ export class Person {
     if(p.curHop != this.id) 
       throw Error("current hop id not fit with person id");
 
-    //if(this.type != "MALICIOUS" && p.type === "VIRUS") 
-    //  this.type = "INFECTED";
-
     if(this.isEdgeNotBusy(p.nextHop)) { 
 
-      if(this.type == "MALICIOUS" || this.type == "INFECTED") {
-        if(Math.random() > 0.01) {
+      if(this.type == "INFECTED") {
+        if(Math.random() > 0.5) {
           p.type = "VIRUS";
           p.message = this.default_virus_message;
       }}
@@ -78,9 +74,8 @@ export class Person {
       p.make_alive();  
       p.setEdgeMovement(positionAttr); 
       this.notifyEdgeBusy(p.nextHop);
-      
+    
       this.forwarded_packets += 1;
-      
       return true;
     } else {
       p.initWaiting();
@@ -90,7 +85,6 @@ export class Person {
 
   notifyPacketReceived(senderId, senderName, message, type) {
     if(this.state != "ALIVE") return;
-    if(this.type === "MALICIOUS") return;
 
     if(this.dev_mode) logMessage(`${this.name} received a message from ${senderName} : ${message}`)
     this.msgs_received.push([senderId, message]);
@@ -98,9 +92,10 @@ export class Person {
     if(type == "REQ") {
       this.notifyPacketToSend(senderId, this.default_ack_message, "ACK");
     }
-
+    if(type == "CURE") {
+      this.revive();
+    }
     if(type == "VIRUS") {
-      //this.die(senderName)
       this.infected(senderName)
     }
 
@@ -118,7 +113,6 @@ export class Person {
       if(this.dev_mode) logMessage(`${this.name} is infected due to a malicious virus from ${senderName}`);
       this.type = "INFECTED";
     }
-    
     this.clock = 0;
   }
 
@@ -131,13 +125,12 @@ export class Person {
 
   notifyPacketToSend(to, message, type = "REQ") {
     if(this.state != "ALIVE") return;
-    if(this.type === "MALICIOUS" || this.type === "INFECTED") {
+    if(this.type === "INFECTED") {
       message = this.default_virus_message;
       type = "VIRUS";
     }
 
     this.msgs_to_send.push([to, message, type])
-    //console.log(to, message, type)
     this.sent_packets += 1;
   }
 
@@ -150,7 +143,6 @@ export class Person {
   }
 
   update() {
-
     if(this.state != "ALIVE") {
       this.updateClock();
       return;
@@ -159,9 +151,7 @@ export class Person {
     this.msgs_received = []
     let msgs_to_send = [...this.msgs_to_send]
     this.msgs_to_send = []
-    
     this.updateClock();
-    
     return {
       "msgs_to_send" : msgs_to_send
     }

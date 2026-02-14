@@ -32,6 +32,7 @@ export async function loadConfig() {
     "SIMULATION_TOTAL_NUMBER_OF_PACKETS" : 500,
     "SIMULATION_PACKET_SPAWN_PROBABILITY" : 0.15,
     "SIMULATION_PACKET_CORRUPTION_PROBABILITY" : 0.01, //TODO
+    "SIMULATION_DEVELOPER_MODE" : false
     }
 
     return config

@@ -6,7 +6,7 @@ import { loadConfig } from "./config.js";
 const config = await loadConfig();
 
 export class Packet {
-  constructor(id, fromNode, toNode, initPos = null, message, type, speed = 0.08) {
+  constructor(id, fromNode, toNode, initPos = null, message, type, speed = 0.05) {
     this.id = id;
     this.state = INIT;
     this.fromNode = fromNode;
@@ -31,8 +31,12 @@ export class Packet {
         this.color = config.PACKET_ACK_COLOR; break;
       case "VIRUS":
         this.color = config.PACKET_VIRUS_COLOR; break;
+      case "CURE":
+        this.color = config.PACKET_CURE_COLOR; break;
+      case "BROAD" :
+        this.color = config.PACKET_BROADCAST_COLOR; break;
       default:
-        this.color = config.PACKET_REQ_COLOR; break;
+        throw new Error("invalid packet type");
     }
 
     this.waitingTimeInterval = 0;

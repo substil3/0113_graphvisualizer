@@ -11,8 +11,10 @@ export async function loadConfig() {
     const config = {
 
     "PACKET_REQ_COLOR" : 0x5bdaeb,
-    "PACKET_ACK_COLOR" : 0x5beb63,
+    "PACKET_ACK_COLOR" : 0x5bdaeb,
     "PACKET_VIRUS_COLOR" : 0xff4444,
+    "PACKET_CURE_COLOR" : 0x5beb63,
+    "PACKET_BROADCAST_COLOR" : 0xffeb14,
     
     "PACKET_CHECK_BUSY_INTERVAL" : 50,
     "PACKET_WAITING_TIMEOUT" : 1000,
@@ -24,6 +26,9 @@ export async function loadConfig() {
     "PLAYER_COST_SEND_PACKET" : 20,
     "PLAYER_COST_GAIN_FORWARD_PACKET" : 5,
     "PLAYER_INITIAL_HEALTH" : 3,
+    "PLAYER_COST_REFILL_TIME_INTERVAL" : 100,
+
+    "HACKER_INITIAL_HEALTH" : 10
 
     }
 

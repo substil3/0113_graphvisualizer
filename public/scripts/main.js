@@ -6,7 +6,9 @@ import { enableMovement } from "./movement.js";
 import { createLabels, updateLabels } from "./labels.js";
 import { logMessage } from "./console.js";
 import { generateConnectedGraph } from "./graph.js";
-import { setupSendPacketForm, setupSimulationButton, updateSimulationValues } from "./ui.js";
+import { setupSendPacketForm, setupSimulationButton, 
+        updateSimulationValues, updatePlayerPanel,
+        putSelectedIdToForm } from "./ui.js";
 import { createPeople } from "../structure/personSystem.js";
 import { PacketSystem } from "../structure/packetSystem.js";
 import { NetworkSystem } from "../structure/networkSystem.js";
@@ -22,7 +24,9 @@ const { scene, camera, renderer } = createScene();
 /* =============================
    Setup Backend Info - Init Network properties, Generate Nodes and Graph, Create Packet
 ============================= */
-const people = createPeople(config["NUMBER_OF_PERSONS"]);
+const numOfPeople = config["NUMBER_OF_PERSONS"];
+const people = createPeople(numOfPeople);
+
 const {points, geometry, gridNodes} = createNodes(people);
 const selectedAttr = geometry.attributes.selected;
 const positionAttr = geometry.attributes.position;
@@ -127,12 +131,15 @@ renderer.domElement.addEventListener("mousemove", (event) => {
     tooltip.innerHTML = `
       <b>${person.name}</b><br/>
       ID: ${person.id}<br/>
-      Type: ${person.type}<br/>
-      State: ${person.state}<br/>
+      State: ${person.state}<br/>` +
+
+      (config.SIMULATION_DEVELOPER_MODE ?
+      `Type: ${person.type}<br/>
       Sent: ${person.sent_packets}<br/>
       Received: ${person.received_packets}<br/>
-      Forwarded: ${person.forwarded_packets}<br/>
-    ` + (person.type == "PLAYER" ?
+      Forwarded: ${person.forwarded_packets}<br/>` : "") +
+
+      (person.type == "PLAYER" ?
       `Health: ${person.health}<br/>
        Cost: ${person.cost}<br/>`
       : "");
@@ -156,8 +163,31 @@ renderer.domElement.addEventListener("mousemove", (event) => {
   } else {
     tooltip.style.display = "none";
   }
+});
 
-  /* 
+renderer.domElement.addEventListener("click", (event) => {
+
+  const rect = renderer.domElement.getBoundingClientRect();
+
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObject(points);
+  if (hits.length === 0) return;
+
+  const clickedIndex = hits[0].index;
+  if(clickedIndex === selectedIndex) {
+    deselectNode(selectedIndex)
+  } else {
+    if(clickedIndex != numOfPeople - 1) {
+      deselectNode(selectedIndex);
+      selectNode(clickedIndex);
+      selectedIndex = clickedIndex;
+      putSelectedIdToForm (clickedIndex);
+    } else selectedIndex = clickedIndex;
+  }
+  /*
   if (selectedIndex === null) {
     selectedIndex = clickedIndex;
     selectNode(clickedIndex);
@@ -177,8 +207,8 @@ renderer.domElement.addEventListener("mousemove", (event) => {
 
     selectedIndex = null;
   }
-    */
-});
+  */
+})
 
 /* =============================
    Camera Movement (Pan / Zoom)
@@ -221,6 +251,11 @@ function animate() {
     receivedPacketNumber: networkSystem.receivedPacketNumber,
     abortedPacketNumber: networkSystem.abortedPacketNumber,
   });
+  updatePlayerPanel({
+    name: networkSystem.player.name,
+    health: networkSystem.player.health,
+    cost:  networkSystem.player.cost,
+  })
 }
 
 animate();

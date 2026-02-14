@@ -22,6 +22,7 @@ export class NetworkSystem {
 
     this.simulationRunning = false;
     this.clock = 0;
+    this.cost_refill_interval = config.PLAYER_COST_REFILL_TIME_INTERVAL;
 
     this.msgs_to_send = [];
     this.sentPacketNumber = 0;
@@ -90,14 +91,16 @@ initRoutingTables() {
   }
 
   updatePeople() {
+    if(this.clock % this.cost_refill_interval === 0) 
+      this.player.costRefill();
+
     for(let person of this.people) {
       let personInfo = person.update();
       if(personInfo) {
         for(let [to, msg, type] of personInfo["msgs_to_send"]) {
           this.msgs_to_send.push([person.id, to, msg, type]);
         }
-      }
-    }
+    }}
   }
 
   sendAllReservedPackets() {
@@ -138,12 +141,12 @@ initRoutingTables() {
   update() {
     if(!this.simulationRunning) return;
 
+    this.updateClock();
     this.maybeSendPacket();
     this.updatePacketMovement();
     this.updatePeople();
     this.sendAllReservedPackets();
-    this.updateClock();
-    
+
     // information for updating scene
     let render_person_state = {};
     for(let person of this.people) {

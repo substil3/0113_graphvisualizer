@@ -164,7 +164,9 @@ export function createNodes(people) {
         vec3 color;
 
         // alive : 0, dead : 1
-        if (vState > 0.99) {
+        if (vSelected > 0.99) {
+          color = selectedColor; 
+        } else if (vState > 0.99) {
           color = deadColor;
         } else {
           switch(int(vType+0.1)) {
@@ -176,22 +178,19 @@ export function createNodes(people) {
               color = baseColor;
               break;
             case 2:
-              color = maliciousColor;
+              color = baseColor;
               break;
             case 3:
               color = infectedColor;
               break;
           }
         }
-        
-        color = mix(color, selectedColor, vSelected);
-        
+
         gl_FragColor = vec4(color, 1.0);
       }
     `
   });
 
-  /* ---------- output ---------- */
   return {
     points: new THREE.Points(geometry, material),
     geometry,
