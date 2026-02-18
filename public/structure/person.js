@@ -8,6 +8,7 @@ export class Person {
     this.id = id;
     this.name = name;
     this.adjs = new Set();
+    this.neighbors = new Set();
     this.busy = {}
 
     this.routingTable = new Map();
@@ -32,6 +33,11 @@ export class Person {
   connect(otherId, weight) {
     this.adjs.add([otherId, weight]);
     this.busy[otherId] = false
+    this.neighbors.add(otherId);
+  }
+
+  initRoutingTable() {
+    this.routingTable = new Map();
   }
 
   setRoute(destinationId, nextHopId) {
@@ -59,6 +65,13 @@ export class Person {
       p.initWaiting();
       return false;
     }
+
+    const nextHop = p.nextHop;
+    if(!this.neighbors.has(nextHop)) {
+      logMessage(`Cannot Send Packet : not appropriate adjacent person id to route packet : ${nextHop}`);
+      return false;
+    }
+
 
     if(p.curHop != this.id) 
       throw Error("current hop id not fit with person id");
@@ -125,6 +138,7 @@ export class Person {
 
   notifyPacketToSend(to, message, type = "REQ") {
     if(this.state != "ALIVE") return;
+
     if(this.type === "INFECTED") {
       message = this.default_virus_message;
       type = "VIRUS";

@@ -117,3 +117,56 @@ body {
   box-shadow: 0 0 6px #3cff00aa;
 }
 
+#sidePanel {
+  position: fixed;
+  right: 16px;
+  z-index: 10;
+
+  width: 220px;
+  height: 550px;
+  max-height: 50vh;
+  overflow: hidden;
+
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 12px;
+  border-radius: 6px;
+
+  color: #ddd;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+#routingList {
+  max-height: calc(50vh - 80px);
+  overflow-y: auto;              /* make scroll */
+  padding-right: 4px;
+}
+
+.routingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+
+  margin-top: 6px;
+  padding: 4px 6px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 3px;
+}
+
+.routingKey {
+  color: #0f0;
+  min-width: 32px;
+}
+
+.routingInput {
+  width: 60px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid #555;
+  color: rgb(255, 190, 136);
+  font-family: monospace;
+  font-size: 12px;
+  padding: 2px 4px;
+  pointer-events: auto;
+  z-index: 10;
+}

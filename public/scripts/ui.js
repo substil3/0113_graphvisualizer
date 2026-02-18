@@ -56,3 +56,47 @@ export function updatePlayerPanel({ name, health, cost }) {
     bar.appendChild(seg);
   }
 }
+
+export function renderRoutingTableEditor(player) {
+  const list = document.getElementById("routingList");
+  list.innerHTML = "";
+
+  for (const [key, value] of player.routingTable.entries()) {
+    const row = document.createElement("div");
+    row.className = "routingRow";
+
+    const keySpan = document.createElement("span");
+    keySpan.className = "routingKey";
+    keySpan.textContent = key;
+
+    const input = document.createElement("input");
+    input.id = `route-${key}`;
+    input.name = `route-${key}`;
+    input.className = "routingInput";
+    input.value = value;
+    input.dataset.key = key;
+
+    row.appendChild(keySpan);
+    row.appendChild(input);
+    list.appendChild(row);
+  }
+}
+
+export function setupRoutingUpdateButton(player) {
+  const btn = document.getElementById("updateRoutingBtn");
+
+  btn.addEventListener("click", () => {
+    const inputs = document.querySelectorAll("#routingList .routingInput");
+
+    player.initRoutingTable(); // TODO (직접 변경은 안되나?)
+    inputs.forEach((input) => {
+      const key = input.dataset.key;
+      const value = input.value;
+      console.log(key, value)
+      player.setRoute(key, value);
+    });
+
+    console.log("Routing table updated");
+    console.log(player.routingTable)
+  });
+}

@@ -8,7 +8,8 @@ import { logMessage } from "./console.js";
 import { generateConnectedGraph } from "./graph.js";
 import { setupSendPacketForm, setupSimulationButton, 
         updateSimulationValues, updatePlayerPanel,
-        putSelectedIdToForm } from "./ui.js";
+        renderRoutingTableEditor, setupRoutingUpdateButton,
+        putSelectedIdToForm} from "./ui.js";
 import { createPeople } from "../structure/personSystem.js";
 import { PacketSystem } from "../structure/packetSystem.js";
 import { NetworkSystem } from "../structure/networkSystem.js";
@@ -33,7 +34,7 @@ const positionAttr = geometry.attributes.position;
 const edges = generateConnectedGraph(gridNodes);
 scene.add(points);
 createLabels(people);
-
+console.log(edges)
 for (const edge of edges) {
 
     const startIndex = edge[0];
@@ -235,6 +236,9 @@ setupSendPacketForm((to) => {
 
 })
 
+renderRoutingTableEditor(networkSystem.player);
+setupRoutingUpdateButton(networkSystem.player);
+
 /* =============================
    Render Loop
 ============================= */
@@ -256,6 +260,8 @@ function animate() {
     health: networkSystem.player.health,
     cost:  networkSystem.player.cost,
   })
+
+
 }
 
 animate();

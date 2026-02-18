@@ -34,6 +34,11 @@ export class PacketSystem {
       if(p.state === INIT) {
         let curPerson = people[p.fromNode];
         p.nextHop = curPerson.getNextHop(p.toNode);
+        if(p.nextHop === null) {
+          p.state = ABORT;
+          continue;
+        }
+          
         let isForwarded = curPerson.forwardPacketIfNotBusy(p, this.positionAttr)
 
         // notify the edge to be busy to next hop person
@@ -50,7 +55,11 @@ export class PacketSystem {
         prevPerson.notifyEdgeNotBusy(p.nextHop);
 
         p.curHop = p.nextHop;
-        p.nextHop = curPerson.getNextHop(p.toNode);      
+        p.nextHop = curPerson.getNextHop(p.toNode);
+        if(p.nextHop === null) {
+          p.state = ABORT;
+          continue;
+        }
         let isForwarded = curPerson.forwardPacketIfNotBusy(p, this.positionAttr);
 
         if(isForwarded) {
@@ -70,10 +79,10 @@ export class PacketSystem {
         }
 
         // wait if the edge is still busy (unit waiting time)
-        if(p.totalWaitingTime >= config["PACKET_WAITING_TIMEOUT"]) {
+        if(p.totalWaitingTime >= config.PACKET_WAITING_TIMEOUT) {
           p.make_abort();
           continue;
-        } if(p.waitingTimeInterval >= config["PACKET_CHECK_BUSY_INTERVAL"]) {
+        } if(p.waitingTimeInterval >= config.PACKET_CHECK_BUSY_INTERVAL) {
           p.initWaiting();
         }
       }

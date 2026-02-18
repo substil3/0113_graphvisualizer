@@ -21,6 +21,11 @@ export class Player extends Person {
   forwardPacketIfNotBusy(p, positionAttr) {
     if(this.state != "ALIVE") {
       p.initWaiting();
+      return false;}
+
+    const nextHop = p.nextHop;
+    if(!this.neighbors.has(nextHop)) {
+      logMessage(`Cannot Send Packet : not appropriate adjacent person id to route packet : ${nextHop}`);
       return false;
     }
 
@@ -73,7 +78,6 @@ export class Player extends Person {
 
   notifyPacketToSend(to, message, type = "REQ") {
     if(this.state != "ALIVE") return;
-
     this.msgs_to_send.push([to, message, type])
     this.sent_packets += 1;
   }
