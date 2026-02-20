@@ -88,10 +88,9 @@ export function setupRoutingUpdateButton(player) {
   btn.addEventListener("click", () => {
     const inputs = document.querySelectorAll("#routingList .routingInput");
 
-    player.initRoutingTable(); // TODO (직접 변경은 안되나?)
     inputs.forEach((input) => {
-      const key = input.dataset.key;
-      const value = input.value;
+      const key = parseInt(input.dataset.key);
+      const value = parseInt(input.value);
       console.log(key, value)
       player.setRoute(key, value);
     });

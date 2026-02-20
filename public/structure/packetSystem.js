@@ -34,12 +34,17 @@ export class PacketSystem {
       if(p.state === INIT) {
         let curPerson = people[p.fromNode];
         p.nextHop = curPerson.getNextHop(p.toNode);
-        if(p.nextHop === null) {
+        console.log(p.toNode, p.nextHop)
+        if(p.nextHop === -1) {
+          logMessage(`Cannot Send Packet : could not find routing destination: ${p.toNode}`);
           p.state = ABORT;
           continue;
         }
-          
         let isForwarded = curPerson.forwardPacketIfNotBusy(p, this.positionAttr)
+        if(isForwarded === -1) {
+          p.state = ABORT;
+          continue;
+        }
 
         // notify the edge to be busy to next hop person
         // this corresponds to slight voltage change of each person's carrier in real environment

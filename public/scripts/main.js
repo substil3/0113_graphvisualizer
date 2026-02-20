@@ -3,7 +3,6 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 import { createScene, addEdgeOnScene } from "./scene.js";
 import { createNodes, updateNodeStateFromNetwork } from "./nodes.js";
 import { enableMovement } from "./movement.js";
-import { createLabels, updateLabels } from "./labels.js";
 import { logMessage } from "./console.js";
 import { generateConnectedGraph } from "./graph.js";
 import { setupSendPacketForm, setupSimulationButton, 
@@ -33,7 +32,7 @@ const selectedAttr = geometry.attributes.selected;
 const positionAttr = geometry.attributes.position;
 const edges = generateConnectedGraph(gridNodes);
 scene.add(points);
-createLabels(people);
+
 console.log(edges)
 for (const edge of edges) {
 

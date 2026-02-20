@@ -26,7 +26,7 @@ export class Player extends Person {
     const nextHop = p.nextHop;
     if(!this.neighbors.has(nextHop)) {
       logMessage(`Cannot Send Packet : not appropriate adjacent person id to route packet : ${nextHop}`);
-      return false;
+      return -1;
     }
 
     if(p.curHop != this.id) 

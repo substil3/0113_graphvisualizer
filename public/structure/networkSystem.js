@@ -116,10 +116,10 @@ initRoutingTables() {
     this.clock += (this.simulationRunning);
   }
 
-  maybeSendPacket() {
+  maybeReservePacket() {
     if (!this.simulationRunning) return;
     if (this.sentPacketNumber >= config.SIMULATION_TOTAL_NUMBER_OF_PACKETS) return;
-    if (true) return;
+    if (Math.random() > config.SIMULATION_PACKET_SPAWN_PROBABILITY) return;
 
     //const [a, b] = edges[Math.floor(Math.random() * edges.length)];
     let a, b;
@@ -140,7 +140,7 @@ initRoutingTables() {
     if(!this.simulationRunning) return;
 
     this.updateClock();
-    this.maybeSendPacket();
+    this.maybeReservePacket();
     this.updatePacketMovement();
     this.updatePeople();
     this.sendAllReservedPackets();

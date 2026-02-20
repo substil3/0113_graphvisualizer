@@ -45,7 +45,7 @@ export class Person {
   }
 
   getNextHop(destinationId) {
-    return this.routingTable.get(destinationId);
+    return (this.routingTable.get(destinationId) != null ? this.routingTable.get(destinationId) : -1);
   }
 
   isEdgeNotBusy(hop) {

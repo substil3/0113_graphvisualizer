@@ -6,7 +6,7 @@ import { loadConfig } from "./config.js";
 const config = await loadConfig();
 
 export class Packet {
-  constructor(id, fromNode, toNode, initPos = null, message, type, speed = 0.05) {
+  constructor(id, fromNode, toNode, initPos = null, message, type, speed = 0.03) {
     this.id = id;
     this.state = INIT;
     this.fromNode = fromNode;
