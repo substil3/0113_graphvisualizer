@@ -12,7 +12,7 @@ export class Player extends Person {
     this.default_req_message = "I'm a Hacker. Who Are You?";
     this.default_ack_message = "Confirmed. You Are Innocent.";
     this.default_cure_message = `You Are Not Idiot. Don't Kill Yourself. From ${this.name}`
-    this.default_broadcast_message =`You Are Not Idiot. Don't Kill Yourself. From ${this.name}`
+    this.default_broadcast_message =`BROADCAST:${"YOUARENOTIDIOT"}`
 
     this.cost = config.PLAYER_INITIAL_COST;
     this.health = config.PLAYER_INITIAL_HEALTH;
@@ -56,6 +56,17 @@ export class Player extends Person {
       this.notifyPacketToSend(senderId, this.default_ack_message, "ACK");
     }
 
+    if(type == "BROADCAST") {
+      let broadcastMsg = message.split(":")[1]
+      if(!this.msgs_saved.has(broadcastMsg)) {
+        this.msgs_saved.add(broadcastMsg);
+        for(let n of this.neighbors) {
+          if(n === senderId) continue;
+          this.notifyPacketToSend(n, this.default_broadcast_message, "BROADCAST");
+        }
+      }
+    }
+
     if(type == "VIRUS") {
       this.takeDamage(senderName)
     }
@@ -78,11 +89,19 @@ export class Player extends Person {
 
   notifyPacketToSend(to, message, type = "REQ") {
     if(this.state != "ALIVE") return;
-    this.msgs_to_send.push([to, message, type])
-    this.sent_packets += 1;
+    if(type == "BROADCAST") {
+      if(to != this.id) throw new Error(`player id not match : ${to}`);
+      for(let n of this.neighbors) {
+        this.msgs_to_send.push([n, message, type])
+        this.sent_packets += 1;
+      }
+    } else {
+      this.msgs_to_send.push([to, message, type])
+      this.sent_packets += 1;
+    }
   }
 
-  sendPacket(to, message = this.default_cure_message, type = "CURE") {
+  sendPacket(to, type = "REQ", message = this.default_cure_message) {
     if(to === this.id) {
       logMessage('Cannot Send Packet : player itself')
       return;
@@ -95,8 +114,10 @@ export class Player extends Person {
     if(type === "CURE")  message = this.default_cure_message;
     if(type === "REQ")   message = this.default_req_message;
     if(type === "ACK")   message = this.default_ack_message;
-    if(type === "BROAD") message = this.default_broadcast_message;
-    
+    if(type === "BROADCAST") {
+      to = this.id;
+      message = this.default_broadcast_message;
+    }
     this.cost -= config.PLAYER_COST_SEND_PACKET;
     this.notifyPacketToSend(to, message, type);
   }

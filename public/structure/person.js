@@ -14,6 +14,7 @@ export class Person {
     this.routingTable = new Map();
     this.msgs_received = []
     this.msgs_to_send = []
+    this.msgs_saved = new Set();
 
     this.default_req_message = "So you do have a mother!";
     this.default_ack_message = "Yes. I have literally two mothers.";
@@ -72,7 +73,6 @@ export class Person {
       return false;
     }
 
-
     if(p.curHop != this.id) 
       throw Error("current hop id not fit with person id");
 
@@ -110,6 +110,16 @@ export class Person {
     }
     if(type == "VIRUS") {
       this.infected(senderName)
+    }
+    if(type == "BROADCAST") {
+      let broadcastMsg = message.split(":")[1]
+      if(!this.msgs_saved.has(broadcastMsg)) { 
+        this.msgs_saved.add(broadcastMsg); 
+        for(let n of this.neighbors) {
+          if(n === senderId) continue;
+          this.notifyPacketToSend(n, this.default_broadcast_message, "BROADCAST");
+        }
+      }
     }
 
     this.received_packets += 1;

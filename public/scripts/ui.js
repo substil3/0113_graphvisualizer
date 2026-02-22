@@ -4,6 +4,7 @@ const metaPanel  = document.getElementById("metaPanel");
 const startSimBtn = document.getElementById("startSim");
 const input = document.getElementById("receiverId");
 const sendPacketButton = document.getElementById("sendPacket");
+let sendPacketType = "REQ";
 
 export function setupSimulationButton(onStart) {
   startSimBtn.addEventListener("click", () => {
@@ -20,8 +21,7 @@ export function setupSendPacketForm(sendPacket) {
       return;
     }
 
-    sendPacket(to);
-    input.value = "";
+    sendPacket(to, sendPacketType);
   });
 }
 
@@ -98,4 +98,24 @@ export function setupRoutingUpdateButton(player) {
     console.log("Routing table updated");
     console.log(player.routingTable)
   });
+}
+
+export function setupPacketTypeToggle() {
+  const buttons = document.querySelectorAll(".packetTypeButton");
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      buttons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const [, type] = btn.id.split(":");
+      sendPacketType = type;
+    });
+  });
+
+  const defaultBtn = document.getElementById("packetType:REQ");
+  if (defaultBtn) {
+    defaultBtn.click();
+  }
+
+  return; 
 }

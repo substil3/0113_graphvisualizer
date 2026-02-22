@@ -24,11 +24,6 @@ body {
     line-height: 1.2em;
 }
 
-#consoleText {
-    flex: 1;
-    overflow-y: auto;
-    white-space: pre-wrap;
-}
 
 .simButton {
     height: 2.2em;
@@ -51,13 +46,25 @@ body {
 }
 
 .simButton:active {
-    background: rgba(255, 0, 0, 0.4);
+    background: rgba(0, 128, 255, 0.4);  
+}
+
+.packetTypeButton {
+    height: 2.2em;
+    padding: 0 10px;
+    font-size: 11px;
+}
+
+.packetTypeButton.active {
+  background: rgba(0, 128, 255, 0.4);  
+  border-color: #4da3ff;
+  color: #cfe6ff;
 }
 
 .simForm {
     height: 2.2em;
     padding: 0 14px;
-
+    width: 60px;
     background: rgba(172, 172, 172, 0.1);
     color: rgb(238, 238, 238);
     border: 1px solid rgb(160, 160, 160);

@@ -105,8 +105,8 @@ initRoutingTables() {
     for(let [from, to, msg, type] of this.msgs_to_send) {
       if(from < 0 || from > this.numOfPeople-1 || to < 0 || to > this.numOfPeople-1) {
         logMessage(`invalid id : ${from}, ${to}`);
-      }
-      let initPos = new THREE.Vector3().fromBufferAttribute(this.positionAttr, from);
+      } let initPos = new THREE.Vector3().fromBufferAttribute(this.positionAttr, from);
+
       this.packetSystem.spawn(from, to, initPos, msg, type)
       this.sentPacketNumber += 1;
     } this.msgs_to_send = []
@@ -117,6 +117,7 @@ initRoutingTables() {
   }
 
   maybeReservePacket() {
+    if (this.clock % 5 != 0) return;
     if (!this.simulationRunning) return;
     if (this.sentPacketNumber >= config.SIMULATION_TOTAL_NUMBER_OF_PACKETS) return;
     if (Math.random() > config.SIMULATION_PACKET_SPAWN_PROBABILITY) return;
@@ -132,8 +133,8 @@ initRoutingTables() {
     pa.notifyPacketToSend(b, pa.default_req_message);
   }
 
-  notifyPlayerSendPacket(to) {
-    this.player.sendPacket(to);
+  notifyPlayerSendPacket(to, type) {
+    this.player.sendPacket(to, type);
   }
 
   update() {

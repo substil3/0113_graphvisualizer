@@ -33,7 +33,7 @@ export class Packet {
         this.color = config.PACKET_VIRUS_COLOR; break;
       case "CURE":
         this.color = config.PACKET_CURE_COLOR; break;
-      case "BROAD" :
+      case "BROADCAST" :
         this.color = config.PACKET_BROADCAST_COLOR; break;
       default:
         throw new Error("invalid packet type");

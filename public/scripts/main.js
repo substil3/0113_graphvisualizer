@@ -8,7 +8,8 @@ import { generateConnectedGraph } from "./graph.js";
 import { setupSendPacketForm, setupSimulationButton, 
         updateSimulationValues, updatePlayerPanel,
         renderRoutingTableEditor, setupRoutingUpdateButton,
-        putSelectedIdToForm} from "./ui.js";
+        putSelectedIdToForm,
+        setupPacketTypeToggle} from "./ui.js";
 import { createPeople } from "../structure/personSystem.js";
 import { PacketSystem } from "../structure/packetSystem.js";
 import { NetworkSystem } from "../structure/networkSystem.js";
@@ -221,7 +222,7 @@ enableMovement({
 });
 
 /* =============================
-   initialize simulation factors
+   initialize simulation UIs
 ============================= */
 
 setupSimulationButton(() => {
@@ -230,20 +231,20 @@ setupSimulationButton(() => {
   else logMessage("simulation stopped")
 });
 
-setupSendPacketForm((to) => {
-  networkSystem.notifyPlayerSendPacket(to);
-
+setupSendPacketForm((to, type) => {
+  networkSystem.notifyPlayerSendPacket(to, type);
 })
 
 renderRoutingTableEditor(networkSystem.player);
 setupRoutingUpdateButton(networkSystem.player);
+setupPacketTypeToggle();
 
 /* =============================
    Render Loop
 ============================= */
 function animate() {
   requestAnimationFrame(animate);
-
+  
   networkSystem.update();
   updateNodeStateFromNetwork(geometry, people);
 
@@ -259,8 +260,6 @@ function animate() {
     health: networkSystem.player.health,
     cost:  networkSystem.player.cost,
   })
-
-
 }
 
 animate();
