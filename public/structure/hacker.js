@@ -34,7 +34,7 @@ export class Hacker extends Person {
       this.takeDamage();
     }
     if(type == "VIRUS") {
-      this.health += 1; //TODO
+      this.health += 0; //TODO
     }
 
     this.received_packets += 1;

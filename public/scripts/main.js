@@ -1,6 +1,6 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-import { createScene, addEdgeOnScene } from "./scene.js";
+import { createScene, addEdgeOnScene} from "./scene.js";
 import { createNodes, updateNodeStateFromNetwork } from "./nodes.js";
 import { enableMovement } from "./movement.js";
 import { logMessage } from "./console.js";
@@ -114,7 +114,6 @@ tooltip.style.display = "none";
 tooltip.style.whiteSpace = "nowrap";
 document.body.appendChild(tooltip);
 
-
 renderer.domElement.addEventListener("mousemove", (event) => {
   const rect = renderer.domElement.getBoundingClientRect();
 
@@ -185,6 +184,7 @@ renderer.domElement.addEventListener("click", (event) => {
       deselectNode(selectedIndex);
       selectNode(clickedIndex);
       selectedIndex = clickedIndex;
+      clearDisplayedPath(scene);  
       putSelectedIdToForm (clickedIndex);
     } else selectedIndex = clickedIndex;
   }
@@ -210,6 +210,46 @@ renderer.domElement.addEventListener("click", (event) => {
   }
   */
 })
+let routeLines = [];
+
+function clearDisplayedPath(scene) {
+  routeLines.forEach((line) => scene.remove(line));
+  routeLines.length = 0;
+}
+
+function displayRoutePath(scene, path) {
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i];
+    const b = path[i + 1];
+
+    const p1 = new THREE.Vector3().fromBufferAttribute(positionAttr, a);
+    const p2 = new THREE.Vector3().fromBufferAttribute(positionAttr, b);
+
+    const geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+    const material = new THREE.LineBasicMaterial({ color: config.EDGE_PATH_COLOR });
+
+    const line = new THREE.Line(geometry, material);
+    routeLines.push(line);
+    scene.add(line);
+  }
+}
+window.addEventListener("keydown", (event) => {
+  if (event.key.toLowerCase() !== "a") return;
+  if (selectedIndex == null) return;
+
+  const pathToSelectedNode = networkSystem.getRoutingPath(playerId, selectedIndex);
+
+  if (!pathToSelectedNode) {
+    logMessage("No valid route found.");
+    return;
+  }
+
+  displayRoutePath(scene, pathToSelectedNode);
+});
+window.addEventListener("keyup", (event) => {
+  clearDisplayedPath(scene);
+});
 
 /* =============================
    Camera Movement (Pan / Zoom)

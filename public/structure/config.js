@@ -9,11 +9,12 @@ export const REMOVED = 99;
 export async function loadConfig() {
 
     const config = {
-
-    "PACKET_REQ_COLOR" : 0x5bdaeb,
-    "PACKET_ACK_COLOR" : 0x5bdaeb,
+        
+    "PACKET_REQ_COLOR" : 0xf7f7f7,
+    "PACKET_ACK_COLOR" : 0xf7f7f7,
     "PACKET_VIRUS_COLOR" : 0xff4444,
     "PACKET_CURE_COLOR" : 0x5beb63,
+    "PACKET_REMOTE_COLOR" : 0x42ecff,
     "PACKET_BROADCAST_COLOR" : 0xffeb14,
     
     "PACKET_CHECK_BUSY_INTERVAL" : 50,

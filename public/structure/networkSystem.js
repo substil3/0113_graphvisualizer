@@ -42,21 +42,34 @@ export class NetworkSystem {
     }
   }
 
-initRoutingTables() {
-  for (const source of this.people) {
+  initRoutingTables() {
+    for (const source of this.people) {
 
-    const { dist, prev } = dijkstra(source.id, this.people);
-    for (let dest = 0; dest < this.people.length; dest++) {
-      if (dest === source.id) continue;
+      const { dist, prev } = dijkstra(source.id, this.people);
+      for (let dest = 0; dest < this.people.length; dest++) {
+        if (dest === source.id) continue;
 
-      const nextHop = reconstructNextHop(source.id, dest, prev);
+        const nextHop = reconstructNextHop(source.id, dest, prev);
 
-      if (nextHop !== null) {
-        source.setRoute(dest, nextHop);
+        if (nextHop !== null) {
+          source.setRoute(dest, nextHop);
+        }
       }
     }
   }
-}
+
+  getRoutingPath(start, end) {
+    let pos = start;
+    let path = [start];
+    while(pos != end) {
+      let nxt = this.people[pos].getNextHop(end);
+      if(nxt === null) return;
+      else {
+        path.push(nxt);
+        pos = nxt;
+      }
+    } return path;
+  }
 
   runNetworkSimulation() {
     this.simulationRunning = true;

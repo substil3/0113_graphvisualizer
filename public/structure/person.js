@@ -21,7 +21,6 @@ export class Person {
     this.default_ack_message = "Yes. I have literally two mothers.";
 
     this.clock = 0;
-    //this.type = (Math.random() > 0.2 ? "NORMAL" : "MALICIOUS");
     this.type = "NORMAL";
     this.state = "ALIVE";
 
@@ -70,15 +69,17 @@ export class Person {
 
     const nextHop = p.nextHop;
     if(!this.neighbors.has(nextHop)) {
-      logMessage(`Cannot Send Packet : not appropriate adjacent person id to route packet : ${nextHop}`);
+      logMessage(`Cannot forward packet : not appropriate adjacent person id to route : ${nextHop}`);
       return false;
     }
 
     if(p.curHop != this.id) 
       throw Error("current hop id not fit with person id");
 
+    if(p.type == "CURE")
+      this.revive();
+    
     if(this.isEdgeNotBusy(p.nextHop)) { 
-
       if(this.type == "INFECTED") {
         if(Math.random() > 0.5) {
           p.type = "VIRUS";

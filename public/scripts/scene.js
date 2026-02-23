@@ -34,3 +34,4 @@ export function addEdgeOnScene(p1, p2) {
   const material = new THREE.LineBasicMaterial({ color: 0xffffff });
   return new THREE.Line(geometry, material);
 }
+

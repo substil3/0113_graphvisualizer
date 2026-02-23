@@ -41,8 +41,10 @@ export class Packet {
         this.color = config.PACKET_VIRUS_COLOR; break;
       case "CURE":
         this.color = config.PACKET_CURE_COLOR; break;
-      case "BROADCAST" :
+      case "BROADCAST":
         this.color = config.PACKET_BROADCAST_COLOR; break;
+      case "REMOTE":
+        this.color = config.PACKET_REMOTE_COLOR; break;
       default:
         throw new Error("invalid packet type");
     }

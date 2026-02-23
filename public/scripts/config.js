@@ -6,7 +6,6 @@ export async function loadConfig() {
     "GRID_HEIGHT": 40,
 
     "GRAPH_EXTRA_EDGE_PROBABILITY": 0.03,
-
     "GRAPH_NODES_MIN_DISTANCE": 3,              // in grid cells
     "GRAPH_NODES_CONNECTED_MAX_DISTANCE": 20,    // in grid cells
 
@@ -18,8 +17,10 @@ export async function loadConfig() {
     "PERSON_SELECTED_COLOR" : 0x5beb63,
     "PERSON_INFECTED_COLOR" : 0xedc00e,   
     "PERSON_DEAD_COLOR" : 0xe04343,
-
     "PERSON_PLAYER_COLOR" : 0x42ecff,
+    
+    "EDGE_BASE_COLOR" : 0xffffff,
+    "EDGE_PATH_COLOR" : 0x1fffad,
 
     "PERSON_TYPE_INT_MAPPING" : {
         "NORMAL" : 1,
