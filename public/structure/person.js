@@ -1,5 +1,6 @@
 import { logMessage } from "../scripts/console.js";
 import { loadConfig } from "./config.js";
+import { instantHash } from "./number.js";
 
 const config = await loadConfig();
 
@@ -96,7 +97,12 @@ export class Person {
     } 
   }
 
-  notifyPacketReceived(senderId, senderName, message, type) {
+  notifyPacketReceived(packet) {
+    const senderId = packet.fromNode;
+    const senderName = packet.toNode;
+    const message = packet.message;
+    const type = packet.type;
+
     if(this.state != "ALIVE") return;
 
     if(this.dev_mode) logMessage(`${this.name} received a message from ${senderName} : ${message}`)
@@ -112,12 +118,12 @@ export class Person {
       this.infected(senderName)
     }
     if(type == "BROADCAST") {
-      let broadcastMsg = message.split(":")[1]
+      let [, broadcastMsg] = message.split(":")
       if(!this.msgs_saved.has(broadcastMsg)) { 
         this.msgs_saved.add(broadcastMsg); 
         for(let n of this.neighbors) {
           if(n === senderId) continue;
-          this.notifyPacketToSend(n, this.default_broadcast_message, "BROADCAST");
+          this.notifyPacketToSend(n, message, "BROADCAST");
         }
       }
     }
@@ -206,6 +212,7 @@ export class Person {
       endPos
     );
   }
+  
   resolveRoute(destinationId, people) {
     if (this.routingTable.has(destinationId)) {
       return this.routingTable.get(destinationId);

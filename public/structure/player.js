@@ -45,24 +45,34 @@ export class Player extends Person {
     }
   }
 
-  notifyPacketReceived(senderId, senderName, message, type) {
+  notifyPacketReceived(packet) {
+    const senderId = packet.fromNode;
+    const senderName = packet.toNode;
+    const message = packet.message;
+    const type = packet.type;
     if(this.state != "ALIVE") return;
     if(this.type === "MALICIOUS") return;
 
-    logMessage(`You received a message from ${senderName} : ${message}`)
+    logMessage(`You received a message from ${senderName}, ${type} : ${message}`)
     this.msgs_received.push([senderId, message]);
 
     if(type == "REQ") {
       this.notifyPacketToSend(senderId, this.default_ack_message, "ACK");
     }
 
+    if(type == "ACK") {
+      console.log(packet.metadata["total_travelled_weight"])
+      this.cost += Math.floor(config.PLAYER_COST_GAIN_RECEIVED_ACK_PER_WEIGHT * packet.metadata["total_travelled_weight"]);
+    }
+
     if(type == "BROADCAST") {
-      let broadcastMsg = message.split(":")[1]
+      let [, broadcastMsg] = message.split(":");
+      console.log(broadcastMsg)
       if(!this.msgs_saved.has(broadcastMsg)) {
         this.msgs_saved.add(broadcastMsg);
         for(let n of this.neighbors) {
           if(n === senderId) continue;
-          this.notifyPacketToSend(n, this.default_broadcast_message, "BROADCAST");
+          this.notifyPacketToSend(n, broadcastMsg, "BROADCAST");
         }
       }
     }
@@ -106,7 +116,7 @@ export class Player extends Person {
       logMessage('Cannot Send Packet : player itself')
       return;
     }
-    if(this.cost < config.PLAYER_COST_SEND_PACKET) {
+    if(this.cost < config.PLAYER_COST_SEND_PACKET[type]) {
       logMessage('Cannot Send Packet : insufficient cost to send');
       return;
     }
@@ -116,9 +126,10 @@ export class Player extends Person {
     if(type === "ACK")   message = this.default_ack_message;
     if(type === "BROADCAST") {
       to = this.id;
-      message = this.default_broadcast_message;
+      message = this.default_broadcast_message + `${Math.floor(Math.random() * 10000)}`;
+      console.log(message)
     }
-    this.cost -= config.PLAYER_COST_SEND_PACKET;
+    this.cost -= config.PLAYER_COST_SEND_PACKET[type];
     this.notifyPacketToSend(to, message, type);
   }
 }

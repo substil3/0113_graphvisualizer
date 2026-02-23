@@ -16,7 +16,12 @@ export class Hacker extends Person {
     this.health = config.HACKER_INITIAL_HEALTH;
   }
 
-  notifyPacketReceived(senderId, senderName, message, type) {
+  notifyPacketReceived(packet) {
+    const senderId = packet.fromNode;
+    const senderName = packet.toNode;
+    const message = packet.message;
+    const type = packet.type;
+
     if(this.state != "ALIVE") return;
 
     if(this.dev_mode) logMessage(`${this.name} received a message from ${senderName} : ${message}`)
@@ -60,7 +65,6 @@ export class Hacker extends Person {
       p.make_alive();
       p.setEdgeMovement(positionAttr);
       this.notifyEdgeBusy(p.nextHop);
-
       this.forwarded_packets += 1;
 
       return true;

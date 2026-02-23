@@ -5,16 +5,24 @@ import { loadConfig } from "./config.js";
 
 const config = await loadConfig();
 
+function calculateWeight(x, passed_nodes) {
+  return Math.pow(x, 1.25 + Math.exp(1-x)) * Math.log2(x/(passed_nodes+1) + 2);
+}
+
 export class Packet {
-  constructor(id, fromNode, toNode, initPos = null, message, type, speed = 0.03) {
+  constructor(id, fromNode, toNode, initPos = null, message, type, speed = 0.04) {
     this.id = id;
+    this.type = type;
     this.state = INIT;
     this.fromNode = fromNode;
     this.toNode = toNode;
     this.curHop = fromNode;
     this.nextHop = null;
     this.message = message;
-    this.type = type;
+    this.metadata = {
+      "passed_nodes" : 0,
+      "total_travelled_weight" : 0
+    };
 
     /* =======================================================
       for unit edge movement (should be reset when forwarded)
@@ -45,7 +53,7 @@ export class Packet {
     const geometry = new THREE.BufferGeometry().setFromPoints([this.pos]);
     const material = new THREE.PointsMaterial({
       color: this.color,
-      size: 6,
+      size: 4,
       sizeAttenuation: false
     });
 
@@ -74,13 +82,17 @@ export class Packet {
     this.totalWaitingTime += 1;
   }
 
+  increase_passing_numbers() {
+    this.metadata["passed_nodes"] += 1;
+  }
+
   setEdgeMovement(positionAttr) {
     this.travelled = 0;
     this.curHopPos = new THREE.Vector3().fromBufferAttribute(positionAttr, this.curHop);
     this.nextHopPos = new THREE.Vector3().fromBufferAttribute(positionAttr, this.nextHop);
     
     this.direction = this.nextHopPos ? this.nextHopPos.clone().sub(this.curHopPos).normalize() : null;
-    this.totalDistance = this.nextHopPos ? this.curHopPos.distanceTo(this.nextHopPos) : null;
+    this.edgeWeight = this.nextHopPos ? this.curHopPos.distanceTo(this.nextHopPos) : null;
   }
 
   update() {
@@ -93,14 +105,15 @@ export class Packet {
     this.pos.addScaledVector(this.direction, this.speed);
     this.travelled += this.speed;
 
-    if (this.travelled >= this.totalDistance) {
+    if (this.travelled >= this.edgeWeight) {
       this.mesh.geometry.setFromPoints([this.nextHopPos]);
       if (this.nextHop === this.toNode) {
         //logMessage(`packet ${this.id} reached destination : ${this.toNode}`)
         this.state = FINISH;
       } else {
         this.state = NEED_FORWARD;
-      }
+      } 
+      this.metadata["total_travelled_weight"] += calculateWeight(this.edgeWeight, this.metadata["passed_nodes"]);
     } else {
       this.mesh.geometry.setFromPoints([this.pos]);
     }

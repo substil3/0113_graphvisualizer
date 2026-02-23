@@ -75,14 +75,13 @@ initRoutingTables() {
     if(!this.simulationRunning) return;
     let packetSystemState = this.packetSystem.update(this.people, this.positionAttr);
    
-    for(let [from, to, message, type] of packetSystemState["finished_packets"]) {
-      let fromPerson = this.people[from];
-      let toPerson = this.people[to];
-      toPerson.notifyPacketReceived(from, fromPerson.name, message, type);
+    for(let fp of packetSystemState["finished_packets"]) {
+      let toPerson = this.people[fp.toNode];
+      toPerson.notifyPacketReceived(fp);
       this.receivedPacketNumber += 1;
     }
 
-    for(let [from, to, message, type] of packetSystemState["aborted_packets"]) {
+    for(let ap of packetSystemState["aborted_packets"]) {
       // TODO (let fromPerson to be notifyed that packet is aborted)
       this.abortedPacketNumber += 1;
     }
@@ -117,7 +116,7 @@ initRoutingTables() {
   }
 
   maybeReservePacket() {
-    if (this.clock % 5 != 0) return;
+    if (this.clock % 10 != 0) return;
     if (!this.simulationRunning) return;
     if (this.sentPacketNumber >= config.SIMULATION_TOTAL_NUMBER_OF_PACKETS) return;
     if (Math.random() > config.SIMULATION_PACKET_SPAWN_PROBABILITY) return;

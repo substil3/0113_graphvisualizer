@@ -1,4 +1,5 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'
+
 import { loadConfig } from "./config.js";
 
 const config = await loadConfig();
@@ -194,7 +195,7 @@ export function createNodes(people) {
   return {
     points: new THREE.Points(geometry, material),
     geometry,
-    gridNodes: nodes      // grid coordinates (gx, gy)
+    gridNodes: nodes  // grid coordinates (gx, gy)
   };
 }
 

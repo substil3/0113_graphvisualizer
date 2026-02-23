@@ -34,7 +34,7 @@ export class PacketSystem {
       if(p.state === INIT) {
         let curPerson = people[p.fromNode];
         p.nextHop = curPerson.getNextHop(p.toNode);
-        console.log(p.toNode, p.nextHop)
+      
         if(p.nextHop === -1) {
           logMessage(`Cannot Send Packet : could not find routing destination: ${p.toNode}`);
           p.state = ABORT;
@@ -49,6 +49,7 @@ export class PacketSystem {
         // notify the edge to be busy to next hop person
         // this corresponds to slight voltage change of each person's carrier in real environment
         if(isForwarded) {
+          p.increase_passing_numbers();
           people[p.nextHop].notifyEdgeBusy(p.fromNode);
         }
 
@@ -68,6 +69,7 @@ export class PacketSystem {
         let isForwarded = curPerson.forwardPacketIfNotBusy(p, this.positionAttr);
 
         if(isForwarded) {
+          p.increase_passing_numbers();
           people[p.nextHop].notifyEdgeBusy(p.curHop);
         }
         
@@ -79,6 +81,7 @@ export class PacketSystem {
         let nextPerson = people[p.nextHop];
         let isForwarded = curPerson.forwardPacketIfNotBusy(p, this.positionAttr);
         if(isForwarded) {
+          p.increase_passing_numbers();
           nextPerson.notifyEdgeBusy(p.curHop);
           continue;
         }
@@ -100,10 +103,10 @@ export class PacketSystem {
 
         this.scene.remove(p.mesh);
         console.log([p.fromNode, p.toNode, p.message]);
-        finished_packets.push([p.fromNode, p.toNode, p.message, p.type]);
+        finished_packets.push(p);
         p.state = REMOVED;
       } else if(p.state === ABORT) {
-        aborted_packets.push([p.fromNode, p.toNode, p.message, p.type]);
+        aborted_packets.push(p);
         p.state = REMOVED;
       }
 

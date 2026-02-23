@@ -5,11 +5,12 @@ import { Hacker } from "./hacker.js";
 
 export function createPeople(count = 80) {
   faker.seed(Math.random()*40000);
+  const hackerId = Math.floor(Math.random()*(count-1))
 
   const people = new Array(count);
 
   for (let i = 0; i < count; i++) {
-    if(i === 0) {
+    if(i === hackerId) {
       people[i] = new Hacker(
         i,
         faker.person.fullName(),

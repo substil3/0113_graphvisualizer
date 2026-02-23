@@ -27,7 +27,7 @@ const { scene, camera, renderer } = createScene();
 ============================= */
 const numOfPeople = config["NUMBER_OF_PERSONS"];
 const people = createPeople(numOfPeople);
-
+const playerId = numOfPeople-1;
 const {points, geometry, gridNodes} = createNodes(people);
 const selectedAttr = geometry.attributes.selected;
 const positionAttr = geometry.attributes.position;
@@ -54,7 +54,7 @@ for (const edge of edges) {
     );
 } 
 
-const packetSystem = new PacketSystem(scene, positionAttr); //TODO
+const packetSystem = new PacketSystem(scene, positionAttr);
 const networkSystem = new NetworkSystem(people, positionAttr, edges, packetSystem)
 
 /* =============================
@@ -219,7 +219,11 @@ enableMovement({
   renderer,
   minZoom: 0.5,
   maxZoom: 5.0
-});
+}); 
+
+[camera.position.x, camera.position.y, camera.position.z] = 
+  new THREE.Vector3().fromBufferAttribute(positionAttr, playerId);
+camera.position.z = 10;
 
 /* =============================
    initialize simulation UIs
@@ -251,7 +255,7 @@ function animate() {
   renderer.render(scene, camera);
   updateSimulationValues({
     clock: networkSystem.clock,
-    sentPacketNumber: networkSystem.sentPacketNumber,
+    sentPacketNumber:   networkSystem.sentPacketNumber,
     receivedPacketNumber: networkSystem.receivedPacketNumber,
     abortedPacketNumber: networkSystem.abortedPacketNumber,
   });
