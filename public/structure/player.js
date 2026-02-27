@@ -13,6 +13,7 @@ export class Player extends Person {
     this.default_ack_message = "Confirmed. You Are Innocent.";
     this.default_cure_message = `You Are Not Idiot. Don't Kill Yourself. From ${this.name}`
     this.default_broadcast_message =`BROADCAST:${"YOUARENOTIDIOT"}`
+    this.default_remote_message = `REMOTE:${"YOUARENOTIDIOT"}`;
 
     this.cost = config.PLAYER_INITIAL_COST;
     this.health = config.PLAYER_INITIAL_HEALTH;
@@ -50,6 +51,8 @@ export class Player extends Person {
     const senderName = packet.toNode;
     const message = packet.message;
     const type = packet.type;
+    const header = packet.header;
+
     if(this.state != "ALIVE") return;
     if(this.type === "MALICIOUS") return;
 
@@ -57,12 +60,17 @@ export class Player extends Person {
     this.msgs_received.push([senderId, message]);
 
     if(type == "REQ") {
-      this.notifyPacketToSend(senderId, this.default_ack_message, "ACK");
+      const key = header["key"];
+      this.notifyPacketToSend(senderId, this.default_ack_message, "ACK", {"key" : key});
     }
 
     if(type == "ACK") {
-      console.log(packet.metadata["total_travelled_weight"])
-      this.cost += Math.floor(config.PLAYER_COST_GAIN_RECEIVED_ACK_PER_WEIGHT * packet.metadata["total_travelled_weight"]);
+      const key = header.key;
+      this.receivedACK(senderId, key);
+
+      console.log(packet.header["total_travelled_weight"]);
+      this.cost += Math.floor(config.PLAYER_COST_GAIN_RECEIVED_ACK_PER_WEIGHT
+        * packet.header["total_travelled_weight"]);
     }
 
     if(type == "BROADCAST") {
@@ -97,16 +105,16 @@ export class Player extends Person {
     }
   }
 
-  notifyPacketToSend(to, message, type = "REQ") {
+  notifyPacketToSend(to, message, type = "REQ", header = {}) {
     if(this.state != "ALIVE") return;
     if(type == "BROADCAST") {
       if(to != this.id) throw new Error(`player id not match : ${to}`);
       for(let n of this.neighbors) {
-        this.msgs_to_send.push([n, message, type])
+        this.msgs_to_send.push([n, message, type, header])
         this.sent_packets += 1;
       }
     } else {
-      this.msgs_to_send.push([to, message, type])
+      this.msgs_to_send.push([to, message, type, header])
       this.sent_packets += 1;
     }
   }
@@ -121,6 +129,8 @@ export class Player extends Person {
       return;
     }
 
+    const key = Math.floor(Math.random() * 10000);
+    let header = {"key" : key};
     if(type === "CURE")  message = this.default_cure_message;
     if(type === "REQ")   message = this.default_req_message;
     if(type === "ACK")   message = this.default_ack_message;
@@ -128,8 +138,12 @@ export class Player extends Person {
       to = this.id;
       message = this.default_broadcast_message + `${Math.floor(Math.random() * 10000)}`;
       console.log(message)
+    } if(type === "REMOTE") {
+      message = this.default_remote_message;
+      type = "ACK";
+      header += {"REMOTE" : "ON"};
     }
     this.cost -= config.PLAYER_COST_SEND_PACKET[type];
-    this.notifyPacketToSend(to, message, type);
+    this.notifyPacketToSend(to, message, type, header);
   }
 }

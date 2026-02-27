@@ -107,19 +107,22 @@ export class NetworkSystem {
     for(let person of this.people) {
       let personInfo = person.update();
       if(personInfo) {
-        for(let [to, msg, type] of personInfo["msgs_to_send"]) {
-          this.msgs_to_send.push([person.id, to, msg, type]);
+        for(let [to, msg, type, header] of personInfo["msgs_to_send"]) {
+          this.msgs_to_send.push([person.id, to, msg, type, header]);
         }
     }}
   }
 
   sendAllReservedPackets() {
-    for(let [from, to, msg, type] of this.msgs_to_send) {
+    for(let [from, to, msg, type, header] of this.msgs_to_send) {
       if(from < 0 || from > this.numOfPeople-1 || to < 0 || to > this.numOfPeople-1) {
         logMessage(`invalid id : ${from}, ${to}`);
       } let initPos = new THREE.Vector3().fromBufferAttribute(this.positionAttr, from);
-
-      this.packetSystem.spawn(from, to, initPos, msg, type)
+      
+      const key = header["key"];
+      if(type === "REQ") {}
+        this.people[from].addWaitingACK(to, key)
+      this.packetSystem.spawn(from, to, initPos, msg, type, header)
       this.sentPacketNumber += 1;
     } this.msgs_to_send = []
   }
@@ -142,7 +145,8 @@ export class NetworkSystem {
     } while (a === b)
 
     let pa = this.people[a];
-    pa.notifyPacketToSend(b, pa.default_req_message);
+    const key = Math.floor(Math.random() * 10000);
+    pa.notifyPacketToSend(b, pa.default_req_message, "REQ", {"key" : key});
   }
 
   notifyPlayerSendPacket(to, type) {

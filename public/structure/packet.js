@@ -10,7 +10,7 @@ function calculateWeight(x, passed_nodes) {
 }
 
 export class Packet {
-  constructor(id, fromNode, toNode, initPos = null, message, type, speed = 0.04) {
+  constructor(id, fromNode, toNode, initPos = null, message, type, header = null, speed = 0.04) {
     this.id = id;
     this.type = type;
     this.state = INIT;
@@ -19,10 +19,10 @@ export class Packet {
     this.curHop = fromNode;
     this.nextHop = null;
     this.message = message;
-    this.metadata = {
+    this.header = {...{
       "passed_nodes" : 0,
       "total_travelled_weight" : 0
-    };
+    }, ...header};
 
     /* =======================================================
       for unit edge movement (should be reset when forwarded)
@@ -43,8 +43,6 @@ export class Packet {
         this.color = config.PACKET_CURE_COLOR; break;
       case "BROADCAST":
         this.color = config.PACKET_BROADCAST_COLOR; break;
-      case "REMOTE":
-        this.color = config.PACKET_REMOTE_COLOR; break;
       default:
         throw new Error("invalid packet type");
     }
@@ -85,7 +83,7 @@ export class Packet {
   }
 
   increase_passing_numbers() {
-    this.metadata["passed_nodes"] += 1;
+    this.header["passed_nodes"] += 1;
   }
 
   setEdgeMovement(positionAttr) {
@@ -115,7 +113,7 @@ export class Packet {
       } else {
         this.state = NEED_FORWARD;
       } 
-      this.metadata["total_travelled_weight"] += calculateWeight(this.edgeWeight, this.metadata["passed_nodes"]);
+      this.header["total_travelled_weight"] += calculateWeight(this.edgeWeight, this.header["passed_nodes"]);
     } else {
       this.mesh.geometry.setFromPoints([this.pos]);
     }

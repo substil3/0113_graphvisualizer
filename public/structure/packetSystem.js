@@ -12,8 +12,8 @@ export class PacketSystem {
     this.idCount = 0;
   }
 
-  spawn(start, end, initPos = null, message = "So you do have a mother!", type = "REQ") {
-    const packet = new Packet(this.idCount, start, end, initPos, message, type);
+  spawn(start, end, initPos = null, message = "So you do have a mother!", type = "REQ", header = null) {
+    const packet = new Packet(this.idCount, start, end, initPos, message, type, header);
     this.idCount += 1;
     this.scene.add(packet.mesh);
     this.packets.push(packet);

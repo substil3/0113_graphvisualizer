@@ -78,7 +78,10 @@ export class Hacker extends Person {
 
     message = this.default_virus_message;
     type = "VIRUS";
-    this.msgs_to_send.push([to, message, type])
+    let header = {
+      "key" : -1, "BRAINWASH" : "ON"
+    }
+    this.msgs_to_send.push([to, message, type, header])
     this.sent_packets += 1;
   }
 

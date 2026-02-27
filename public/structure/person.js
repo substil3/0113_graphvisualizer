@@ -10,12 +10,13 @@ export class Person {
     this.name = name;
     this.adjs = new Set();
     this.neighbors = new Set();
-    this.busy = {}
+    this.busy = {};
 
     this.routingTable = new Map();
-    this.msgs_received = []
-    this.msgs_to_send = []
+    this.msgs_received = [];
+    this.msgs_to_send = [];
     this.msgs_saved = new Set();
+    this.waiting_resp = {};
 
     this.default_req_message = "So you do have a mother!";
     this.default_ack_message = "Yes. I have literally two mothers.";
@@ -23,6 +24,9 @@ export class Person {
     this.clock = 0;
     this.type = "NORMAL";
     this.state = "ALIVE";
+
+    this.isRemote = false;
+    this.remoteParent = null;
 
     this.sent_packets = 0;
     this.received_packets = 0;
@@ -103,6 +107,7 @@ export class Person {
     const senderName = packet.toNode;
     const message = packet.message;
     const type = packet.type;
+    const header = packet.header;
 
     if(this.state != "ALIVE") return;
 
@@ -110,7 +115,20 @@ export class Person {
     this.msgs_received.push([senderId, message]);
 
     if(type == "REQ") {
-      this.notifyPacketToSend(senderId, this.default_ack_message, "ACK");
+      const key = header["key"];
+      if(header["remote"] === "ON") {
+        this.notifyPacketToSend(senderId, this.default_ack_message, "ACK", 
+          {"key" : key, "remote" : "ON"});
+      } else {
+        this.notifyPacketToSend(senderId, this.default_ack_message, "ACK", 
+          {"key" : key});
+      }
+    }
+    if(type == "ACK") {
+      const key = header.key;
+      this.receivedACK(senderId, key);
+
+      console.log(packet.header["total_travelled_weight"]);
     }
     if(type == "CURE") {
       this.revive();
@@ -130,6 +148,41 @@ export class Person {
     }
 
     this.received_packets += 1;
+  }
+
+  notifyPacketToSend(to, message, type = "REQ", header = {}) {
+    if(this.state != "ALIVE") return;
+
+    if(this.type === "INFECTED") {
+      message = this.default_virus_message;
+      type = "VIRUS";
+    }
+
+    this.msgs_to_send.push([to, message, type, header]);
+    this.sent_packets += 1;
+  }
+
+  addWaitingACK(receiverId, key) {
+    if(!this.waiting_resp[receiverId])
+      this.waiting_resp[receiverId] = new Set([key]);
+    else
+      this.waiting_resp[receiverId].add(key);
+  }
+
+  receivedACK(senderId, key) {
+    if(!this.waiting_resp[senderId]) 
+      throw new Error(`error : sender ID not found from ACK waiting queue : ${senderId}`);
+    if(!this.waiting_resp[senderId].has(key)) 
+      throw new Error(`error : sender key not found from ACK waiting queue : ${senderId} -> ${key}`);
+    this.waiting_resp[senderId].delete(key);
+  }
+
+  updateClock() {
+    this.clock += 1;
+    if(this.state === "DEAD" && this.clock >= config["PERSON_DEAD_STATE_TIME"]) 
+      this.revive();
+    if(this.type === "INFECTED" && this.clock >= config["PERSON_INFECTED_STATE_TIME"]) 
+      this.revive();
   }
 
   die(senderName) {
@@ -153,26 +206,6 @@ export class Person {
     this.clock = 0;
   }
 
-  notifyPacketToSend(to, message, type = "REQ") {
-    if(this.state != "ALIVE") return;
-
-    if(this.type === "INFECTED") {
-      message = this.default_virus_message;
-      type = "VIRUS";
-    }
-
-    this.msgs_to_send.push([to, message, type])
-    this.sent_packets += 1;
-  }
-
-  updateClock() {
-    this.clock += 1;
-    if(this.state === "DEAD" && this.clock >= config["PERSON_DEAD_STATE_TIME"]) 
-      this.revive();
-    if(this.type === "INFECTED" && this.clock >= config["PERSON_INFECTED_STATE_TIME"]) 
-      this.revive();
-  }
-
   update() {
     if(this.state != "ALIVE") {
       this.updateClock();
@@ -187,74 +220,4 @@ export class Person {
       "msgs_to_send" : msgs_to_send
     }
   }
-
-  forwardPacket(packet, positions, packetSystem) {
-    const destinationId = packet.toNode;
-    if (this.id === destinationId) {
-      return;
-    }
-
-    const nextHop = this.getNextHop(destinationId);
-    if (nextHop === undefined) {
-      console.warn(
-        `No route from ${this.id} to ${destinationId}, resolving route information`
-      );
-      this.resolveRoute(destinationId);
-    }
-
-    const startPos = positions[this.id];
-    const endPos = positions[nextHop];
-
-    packetSystem.spawn(
-      this.id,
-      nextHop,
-      destination,
-      startPos,
-      endPos
-    );
-  }
-  
-  resolveRoute(destinationId, people) {
-    if (this.routingTable.has(destinationId)) {
-      return this.routingTable.get(destinationId);
-    }
-
-    const visited = new Set([this.id]);
-    const queue = [this.id];
-    const prev = new Map();
-
-    while (queue.length) {
-      const current = queue.shift();
-
-      if (current === destinationId) break;
-
-      for (const [neighbor, weight] of people[current].adjs) {
-        if (!visited.has(neighbor)) {
-          visited.add(neighbor);
-          prev.set(neighbor, current);
-          queue.push(neighbor);
-        }
-      }
-    }
-
-    if (!prev.has(destinationId)) {
-      return undefined;
-    }
-
-    // reconstruct next hop
-    let step = destinationId;
-    while (prev.get(step) !== this.id) {
-      step = prev.get(step);
-      if (step === undefined) return undefined;
-    }
-
-    this.routingTable.set(destinationId, step);
-    return step;
-  }
 }
-
-
-
-
-
-
