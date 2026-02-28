@@ -116,9 +116,9 @@ export class Person {
 
     if(type == "REQ") {
       const key = header["key"];
-      if(header["remote"] === "ON") {
+      if(header["remote"] === "ON" && !this.isRemote) {
         this.notifyPacketToSend(senderId, this.default_ack_message, "ACK", 
-          {"key" : key, "remote" : "ON"});
+          {"key" : key, "remote" : "ON", "child-pointer" : this});
       } else {
         this.notifyPacketToSend(senderId, this.default_ack_message, "ACK", 
           {"key" : key});
@@ -126,9 +126,11 @@ export class Person {
     }
     if(type == "ACK") {
       const key = header.key;
-      this.receivedACK(senderId, key);
-
-      console.log(packet.header["total_travelled_weight"]);
+      if(header["remote"] === "ON") {
+        this.enterRemoteState(senderId);
+      } else {
+        this.receivedACK(senderId, key);
+      }
     }
     if(type == "CURE") {
       this.revive();
@@ -202,8 +204,15 @@ export class Person {
   revive() {
     if(this.dev_mode) logMessage(`${this.name} just revived`);
     this.state = "ALIVE";
-    this.type = "NORMAL";
+    this.type = this.isRemote ? "REMOTE" : "NORMAL";
     this.clock = 0;
+  }
+
+  enterRemoteState(parent_id) {
+    this.state = "ALIVE";
+    this.type = "REMOTE";
+    this.isRemote = true;
+    this.remoteParent = parent_id;
   }
 
   update() {
@@ -218,6 +227,6 @@ export class Person {
     this.updateClock();
     return {
       "msgs_to_send" : msgs_to_send
-    }
+    };
   }
 }

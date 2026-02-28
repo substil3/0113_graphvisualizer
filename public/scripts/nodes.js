@@ -119,6 +119,7 @@ export function createNodes(people) {
       selectedColor:    { value: new THREE.Color(config.PERSON_SELECTED_COLOR) },
       maliciousColor:   { value: new THREE.Color(config.PERSON_MALICIOUS_COLOR) },
       infectedColor:    { value: new THREE.Color(config.PERSON_INFECTED_COLOR) },
+      remoteColor:      { value: new THREE.Color(config.PERSON_REMOTE_COLOR) },
 
       playerColor:      { value: new THREE.Color(config.PERSON_PLAYER_COLOR) },
 
@@ -149,6 +150,7 @@ export function createNodes(people) {
       uniform vec3 maliciousColor;
       uniform vec3 infectedColor;
       uniform vec3 deadColor;
+      uniform vec3 remoteColor;
 
       uniform vec3 playerColor;
 
@@ -183,6 +185,9 @@ export function createNodes(people) {
               break;
             case 3:
               color = infectedColor;
+              break;
+            case 4:
+              color = remoteColor;
               break;
           }
         }

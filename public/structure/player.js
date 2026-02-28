@@ -17,6 +17,8 @@ export class Player extends Person {
 
     this.cost = config.PLAYER_INITIAL_COST;
     this.health = config.PLAYER_INITIAL_HEALTH;
+
+    this.remote_child = {};
   }
 
   forwardPacketIfNotBusy(p, positionAttr) {
@@ -71,6 +73,14 @@ export class Player extends Person {
       console.log(packet.header["total_travelled_weight"]);
       this.cost += Math.floor(config.PLAYER_COST_GAIN_RECEIVED_ACK_PER_WEIGHT
         * packet.header["total_travelled_weight"]);
+
+      if(header["remote"] === "ON") {
+        console.log("asdfasdf")
+        const child_pointer = header["child-pointer"];
+        this.establishRemoteControl(senderId, child_pointer);
+        this.notifyPacketToSend(senderId, this.default_ack_message, 
+          "ACK", {"key" : key, "remote" : "ON"});
+      }
     }
 
     if(type == "BROADCAST") {
@@ -105,6 +115,10 @@ export class Player extends Person {
     }
   }
 
+  establishRemoteControl(child_id, child_pointer) {
+    this.remote_child[child_id] = child_pointer;
+  }
+
   notifyPacketToSend(to, message, type = "REQ", header = {}) {
     if(this.state != "ALIVE") return;
     if(type == "BROADCAST") {
@@ -119,7 +133,7 @@ export class Player extends Person {
     }
   }
 
-  sendPacket(to, type = "REQ", message = this.default_cure_message) {
+  sendPacket(to, type = "REQ", message = this.default_cure_message, remote = false, remote_id = null) {
     if(to === this.id) {
       logMessage('Cannot Send Packet : player itself')
       return;
@@ -139,11 +153,17 @@ export class Player extends Person {
       message = this.default_broadcast_message + `${Math.floor(Math.random() * 10000)}`;
       console.log(message)
     } if(type === "REMOTE") {
-      message = this.default_remote_message;
-      type = "ACK";
-      header += {"REMOTE" : "ON"};
+      message = this.default_req_message;
+      type = "REQ";
+      header =  {...header, ...{"remote" : "ON"}};
+      console.log(header);
     }
     this.cost -= config.PLAYER_COST_SEND_PACKET[type];
-    this.notifyPacketToSend(to, message, type, header);
+    if(remote) {
+      const child = this.remote_child[remote_id];
+      child.notifyPacketToSend(to, message, type, header);
+    } else {
+      this.notifyPacketToSend(to, message, type, header);
+    }
   }
 }

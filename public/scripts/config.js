@@ -15,7 +15,8 @@ export async function loadConfig() {
     "PERSON_BASE_COLOR" : 0xf7f7f7,
     "PERSON_MALICIOUS_COLOR" : 0xe04343,
     "PERSON_SELECTED_COLOR" : 0x5beb63,
-    "PERSON_INFECTED_COLOR" : 0xedc00e,   
+    "PERSON_INFECTED_COLOR" : 0xedc00e,
+    "PERSON_REMOTE_COLOR" : 0x3fd7e8,
     "PERSON_DEAD_COLOR" : 0xe04343,
     "PERSON_PLAYER_COLOR" : 0x42ecff,
     
@@ -26,6 +27,7 @@ export async function loadConfig() {
         "NORMAL" : 1,
         "MALICIOUS"  : 2,
         "INFECTED" : 3,
+        "REMOTE" : 4,
 
         "PLAYER" : 0
     },

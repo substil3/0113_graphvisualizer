@@ -8,7 +8,7 @@ import { generateConnectedGraph } from "./graph.js";
 import { setupSendPacketForm, setupSimulationButton, 
         updateSimulationValues, updatePlayerPanel,
         renderRoutingTableEditor, setupRoutingUpdateButton,
-        putSelectedIdToForm,
+        putSenderId, putReceiverId,
         setupPacketTypeToggle} from "./ui.js";
 import { createPeople } from "../structure/personSystem.js";
 import { PacketSystem } from "../structure/packetSystem.js";
@@ -28,10 +28,11 @@ const { scene, camera, renderer } = createScene();
 const numOfPeople = config["NUMBER_OF_PERSONS"];
 const people = createPeople(numOfPeople);
 const playerId = numOfPeople-1;
-const {points, geometry, gridNodes} = createNodes(people);
-const selectedAttr = geometry.attributes.selected;
-const positionAttr = geometry.attributes.position;
-const edges = generateConnectedGraph(gridNodes);
+let senderId = playerId;
+let {points, geometry, gridNodes} = createNodes(people);
+let selectedAttr = geometry.attributes.selected;
+let positionAttr = geometry.attributes.position;
+let edges = generateConnectedGraph(gridNodes);
 scene.add(points);
 
 console.log(edges)
@@ -185,7 +186,7 @@ renderer.domElement.addEventListener("click", (event) => {
       selectNode(clickedIndex);
       selectedIndex = clickedIndex;
       clearDisplayedPath(scene);  
-      putSelectedIdToForm (clickedIndex);
+      putReceiverId (clickedIndex);
     } else selectedIndex = clickedIndex;
   }
   /*
@@ -209,7 +210,26 @@ renderer.domElement.addEventListener("click", (event) => {
     selectedIndex = null;
   }
   */
-})
+});
+
+renderer.domElement.addEventListener("contextmenu", (event) => {
+
+  const rect = renderer.domElement.getBoundingClientRect();
+  event.preventDefault();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObject(points);
+  if (hits.length === 0) return;
+
+  const clickedIndex = hits[0].index;
+  senderId = clickedIndex;
+  // TODO : works when only player or remote state
+  clearDisplayedPath(scene);
+  putSenderId(clickedIndex);
+});
+
 let routeLines = [];
 
 function clearDisplayedPath(scene) {
@@ -238,7 +258,7 @@ window.addEventListener("keydown", (event) => {
   if (event.key.toLowerCase() !== "a") return;
   if (selectedIndex == null) return;
 
-  const pathToSelectedNode = networkSystem.getRoutingPath(playerId, selectedIndex);
+  const pathToSelectedNode = networkSystem.getRoutingPath(senderId, selectedIndex);
 
   if (!pathToSelectedNode) {
     logMessage("No valid route found.");
@@ -275,9 +295,9 @@ setupSimulationButton(() => {
   else logMessage("simulation stopped")
 });
 
-setupSendPacketForm((to, type) => {
-  networkSystem.notifyPlayerSendPacket(to, type);
-})
+setupSendPacketForm((from, to, type) => {
+  networkSystem.notifyPlayerSendPacket(from, to, type);
+}, playerId)
 
 renderRoutingTableEditor(networkSystem.player);
 setupRoutingUpdateButton(networkSystem.player);

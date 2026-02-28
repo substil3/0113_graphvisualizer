@@ -2,7 +2,8 @@ import { logMessage } from "./console.js";
 
 const metaPanel  = document.getElementById("metaPanel");
 const startSimBtn = document.getElementById("startSim");
-const input = document.getElementById("receiverId");
+const senderIdInput = document.getElementById("senderId");
+const receiverIdInput = document.getElementById("receiverId");
 const sendPacketButton = document.getElementById("sendPacket");
 let sendPacketType = "REQ";
 
@@ -12,21 +13,28 @@ export function setupSimulationButton(onStart) {
   });
 }
 
-export function setupSendPacketForm(sendPacket) {
+export function setupSendPacketForm(sendPacket, senderId = 0, receiverId = null) {
   sendPacketButton.addEventListener("click", () => {
-    const to = Number(input.value);
+    const from = Number(senderIdInput.value);
+    const to = Number(receiverIdInput.value);
 
     if (Number.isNaN(to)) {
       logMessage("Invalid target node id");
       return;
     }
 
-    sendPacket(to, sendPacketType);
+    sendPacket(from, to, sendPacketType);
   });
+  senderIdInput.value = senderId;
+  if(receiverId) receiverIdInput.value = receiverId;
 }
 
-export function putSelectedIdToForm(id) {
-  input.value = id;
+export function putSenderId(id) {
+  senderIdInput.value = id;
+}
+
+export function putReceiverId(id) {
+  receiverIdInput.value = id;
 }
 
 export function updateSimulationValues(simulationValues) {

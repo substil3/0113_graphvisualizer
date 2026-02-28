@@ -120,7 +120,7 @@ export class NetworkSystem {
       } let initPos = new THREE.Vector3().fromBufferAttribute(this.positionAttr, from);
       
       const key = header["key"];
-      if(type === "REQ") {}
+      if(type === "REQ")
         this.people[from].addWaitingACK(to, key)
       this.packetSystem.spawn(from, to, initPos, msg, type, header)
       this.sentPacketNumber += 1;
@@ -149,8 +149,15 @@ export class NetworkSystem {
     pa.notifyPacketToSend(b, pa.default_req_message, "REQ", {"key" : key});
   }
 
-  notifyPlayerSendPacket(to, type) {
-    this.player.sendPacket(to, type);
+  notifyPlayerSendPacket(from, to, type) {
+    if(from === this.player.id)
+      this.player.sendPacket(to, type);
+    else if(this.player.remote_child[from]) {
+      const msg = this.player.default_req_message;
+      this.player.sendPacket(to, type, msg, true, from);
+    } else {
+      logMessage(`Cannot Send Packet : sender Id must be player or remote controlled person`);
+    }
   }
 
   update() {

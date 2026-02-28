@@ -29,6 +29,7 @@ export async function loadConfig() {
         "ACK" : 0,
         "BROADCAST" : 100,
         "CURE" : 30,
+        "REMOTE" : 50
     },
 
     "PLAYER_COST_GAIN_FORWARD_PACKET" : 5,

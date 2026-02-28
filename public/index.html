@@ -14,13 +14,20 @@
   <div id="console"></div>
   <button id="startSim" class="simButton">Start</button>
     <input
+      id="senderId"
+      class="simForm"
+      placeholder="Sender ID"
+      min="0"
+    /> 
+    <input
       id="receiverId"
       class="simForm"
-      placeholder="Node ID"
+      placeholder="Receiver ID"
       min="0"
     /> 
     <button id="packetType:REQ" class="simButton packetTypeButton"> REQ - 20 cost</button>
     <button id="packetType:CURE" class="simButton packetTypeButton"> CURE - 30 cost </button>
+    <button id="packetType:REMOTE" class="simButton packetTypeButton"> REMOTE - 50 cost </button>
     <button id="packetType:BROADCAST" class="simButton packetTypeButton"> BROADCAST - 100 cost </button>
   <button id="sendPacket" class="simButton" type="submit">Send Packet</button>
 
