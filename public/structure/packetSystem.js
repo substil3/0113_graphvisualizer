@@ -103,7 +103,6 @@ export class PacketSystem {
         prevPerson.notifyEdgeNotBusy(p.nextHop); 
 
         this.scene.remove(p.mesh);
-        console.log([p.type, p.fromNode, p.toNode, p.message]);
         finished_packets.push(p);
         p.state = REMOVED;
       } else if(p.state === ABORT) {

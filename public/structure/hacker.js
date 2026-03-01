@@ -8,6 +8,8 @@ export class Hacker extends Person {
   constructor(id, name) {
     super(id, name);
     this.type = "MALICIOUS";
+    this.exploit_cnt = 0;
+    this.max_exploit_cnt = config.HACKER_MAX_EXPLOIT;
 
     this.default_req_message = "I'm a Hacker. Who Are You?";
     this.default_ack_message = "Confirmed. You Are Innocent.";
@@ -76,6 +78,7 @@ export class Hacker extends Person {
   notifyPacketToSend(to, message, type = "REQ") {
     if(this.state != "ALIVE") return;
 
+    type = Math.random() > config.HACKER_CREATE_VIRUS_POSSIBILITY ? type : "VIRUS";
     message = this.default_virus_message;
     type = "VIRUS";
     let header = {
@@ -85,4 +88,9 @@ export class Hacker extends Person {
     this.sent_packets += 1;
   }
 
+  exploit(to, message = this.default_virus_message, type = "VIRUS") {
+    if(this.exploit_cnt >= this.max_exploit_cnt) return;
+    this.exploit_cnt++;
+    this.notifyPacketToSend(to, message, type)
+  }
 }

@@ -64,12 +64,12 @@ const networkSystem = new NetworkSystem(people, positionAttr, edges, packetSyste
 let selectedIndex = null;
 function selectNode(index) {
   selectedAttr.array[index] = 1.0;
-  selectedAttr.needsUpdate = true;
+  //selectedAttr.needsUpdate = true;
 }
 
 function deselectNode(index) {
   selectedAttr.array[index] = 0.0;
-  selectedAttr.needsUpdate = true;
+  //selectedAttr.needsUpdate = true;
 }
 
 /* =============================
@@ -308,6 +308,7 @@ setupPacketTypeToggle();
 /* =============================
    Render Loop
 ============================= */
+
 function animate() {
   requestAnimationFrame(animate);
   

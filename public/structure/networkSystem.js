@@ -21,7 +21,7 @@ export class NetworkSystem {
       this.initRoutingTables();
 
     this.simulationRunning = false;
-    this.dev_mode = true;
+    this.dev_mode = false;
     this.clock = 0;
     this.cost_refill_interval = config.PLAYER_COST_REFILL_TIME_INTERVAL;
 
@@ -30,7 +30,12 @@ export class NetworkSystem {
     this.receivedPacketNumber = 0;
     this.abortedPacketNumber = 0;
 
-    this.rendered_person_state = {}
+    this.rendered_person_state = {};
+
+    for(let person of this.people) {
+      if(person.type === "MALICIOUS")
+        this.hacker = person;
+    }
 
   }
 
@@ -137,7 +142,7 @@ export class NetworkSystem {
   }
 
   maybeReservePacket() {
-    if (this.clock % 10 != 0) return;
+    if (this.clock % 20 != 0) return;
     if (!this.simulationRunning) return;
     if (this.sentPacketNumber >= config.SIMULATION_TOTAL_NUMBER_OF_PACKETS) return;
     if (this.dev_mode) return;
@@ -149,11 +154,22 @@ export class NetworkSystem {
       a = Math.floor(Math.random() * (this.people.length-1));
       b = Math.floor(Math.random() * (this.people.length));
     } while (a === b || (this.returnPersonType(a) === "PLAYER") || (this.returnPersonType(b) === "PLAYER")
+                     || (this.returnPersonType(a) === "MALICIOUS") || (this.returnPersonType(b) === "MALICIOUS")
                      || (this.returnPersonType(a) === "REMOTE") || (this.returnPersonType(b) === "REMOTE"));
 
     let pa = this.people[a];
     const key = Math.floor(Math.random() * 10000);
     pa.notifyPacketToSend(b, pa.default_req_message, "REQ", {"key" : key});
+  }
+
+  maybeReserveHackerPacket() {
+    if (this.clock % 60 != 0) return;
+    if (!this.simulationRunning) return;
+    if (this.dev_mode) return;
+    if (Math.random() > config.SIMULATION_PACKET_SPAWN_PROBABILITY) return;
+
+    let vic = Math.floor(Math.random() * (this.people.length-1));
+    this.hacker.exploit(vic);
   }
 
   notifyPlayerSendPacket(from, to, type) {
@@ -172,6 +188,7 @@ export class NetworkSystem {
 
     this.updateClock();
     this.maybeReservePacket();
+    this.maybeReserveHackerPacket();
     this.updatePacketMovement();
     this.updatePeople();
     this.sendAllReservedPackets();

@@ -1,6 +1,6 @@
 import { logMessage } from "../scripts/console.js";
 import { loadConfig } from "./config.js";
-import { instantHash } from "./number.js";
+import { convertNumberToString } from "./number.js";
 
 const config = await loadConfig();
 
@@ -20,6 +20,7 @@ export class Person {
 
     this.default_req_message = "So you do have a mother!";
     this.default_ack_message = "Yes. I have literally two mothers.";
+    this.ack_message_unique_num = 2
 
     this.clock = 0;
     this.type = "NORMAL";
@@ -126,7 +127,7 @@ export class Person {
     }
     if(type == "ACK") {
       const key = header["key"];
-      if(this.type === "REMOTE") {
+      if(this.isRemote) {
         console.log(packet.header["total_travelled_weight"]);
         const parent = this.remoteParent;
         parent.cost += Math.floor(config.PLAYER_COST_GAIN_RECEIVED_ACK_PER_WEIGHT
@@ -135,12 +136,17 @@ export class Person {
         if(header["remote"] === "ON") {
           const child_pointer = header["child-pointer"];
           parent.establishRemoteControl(senderId, child_pointer);
+          this.ack_message_unique_num += 1;
+          this.default_ack_message = `Yes. I have literally 
+                                      ${convertNumberToString[this.ack_message_unique_num]} mothers.`
           this.notifyPacketToSend(senderId, this.default_ack_message, 
             "ACK", {"key" : key, "remote" : "ON", "parent-pointer" : parent});
+          this.receivedACK(senderId, key);
         }
       } 
       else if(header["remote"] === "ON") {
         const parent_pointer = header["parent-pointer"];
+        this.revive();
         this.enterRemoteState(parent_pointer);
       } else {
         this.receivedACK(senderId, key);
@@ -167,13 +173,14 @@ export class Person {
   }
 
   notifyPacketToSend(to, message, type = "REQ", header = {}) {
+    console.log(to, message, type)
     if(this.state != "ALIVE") return;
     if(type == "BROADCAST") {
       for(let n of this.neighbors) {
         this.msgs_to_send.push([n, message, type, header])
         this.sent_packets += 1;
-      }
-    } else {
+      }} 
+    else {
       this.msgs_to_send.push([to, message, type, header])
       this.sent_packets += 1;
     }
@@ -181,13 +188,10 @@ export class Person {
       message = this.default_virus_message;
       type = "VIRUS";
     }
-
-    this.msgs_to_send.push([to, message, type, header]);
-    this.sent_packets += 1;
   }
 
   addWaitingACK(receiverId, key) {
-    if(!this.waiting_resp[receiverId])
+    if(this.waiting_resp[receiverId] == null)
       this.waiting_resp[receiverId] = new Set([key]);
     else
       this.waiting_resp[receiverId].add(key);

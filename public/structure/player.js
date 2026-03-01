@@ -9,11 +9,9 @@ export class Player extends Person {
     super(id, name)
     this.type = "PLAYER";
 
-    this.default_req_message = "I'm a Hacker. Who Are You?";
-    this.default_ack_message = "Confirmed. You Are Innocent.";
     this.default_cure_message = `You Are Not Idiot. Don't Kill Yourself. From ${this.name}`
     this.default_broadcast_message =`BROADCAST:${"YOUARENOTIDIOT"}`
-    this.default_remote_message = `REMOTE:${"YOUARENOTIDIOT"}`;
+    this.default_remote_message = `I'm Your New Mother. Pray For Me.`;
 
     this.cost = config.PLAYER_INITIAL_COST;
     this.health = config.PLAYER_INITIAL_HEALTH;
@@ -68,7 +66,6 @@ export class Player extends Person {
 
     if(type == "ACK") {
       const key = header.key;
-      this.receivedACK(senderId, key);
 
       console.log(packet.header["total_travelled_weight"]);
       this.cost += Math.floor(config.PLAYER_COST_GAIN_RECEIVED_ACK_PER_WEIGHT
@@ -79,6 +76,8 @@ export class Player extends Person {
         this.establishRemoteControl(senderId, child_pointer);
         this.notifyPacketToSend(senderId, this.default_ack_message, 
           "ACK", {"key" : key, "remote" : "ON", "parent-pointer" : this});
+      } else {
+        this.receivedACK(senderId, key);
       }
     }
 
@@ -140,7 +139,7 @@ export class Player extends Person {
       logMessage('Cannot Send Packet : insufficient cost to send');
       return;
     }
-
+    this.cost -= config.PLAYER_COST_SEND_PACKET[type];
     const key = Math.floor(Math.random() * 10000);
     let header = {"key" : key};
     if(type === "CURE")  message = this.default_cure_message;
@@ -157,7 +156,7 @@ export class Player extends Person {
       header =  {...header, ...{"remote" : "ON"}};
       console.log(header);
     }
-    this.cost -= config.PLAYER_COST_SEND_PACKET[type];
+    
     if(remote) {
       const child = this.remote_child[remote_id];
       header = {...header, ...{"root" : this.id}};
