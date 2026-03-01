@@ -21,6 +21,7 @@ export class NetworkSystem {
       this.initRoutingTables();
 
     this.simulationRunning = false;
+    this.dev_mode = true;
     this.clock = 0;
     this.cost_refill_interval = config.PLAYER_COST_REFILL_TIME_INTERVAL;
 
@@ -84,6 +85,10 @@ export class NetworkSystem {
     else this.stopNetworkSimulation();
   }
 
+  returnPersonType(personId) {
+    return this.people[personId].type;
+  }
+
   updatePacketMovement() {
     if(!this.simulationRunning) return;
     let packetSystemState = this.packetSystem.update(this.people, this.positionAttr);
@@ -121,7 +126,7 @@ export class NetworkSystem {
       
       const key = header["key"];
       if(type === "REQ")
-        this.people[from].addWaitingACK(to, key)
+        this.people[from].addWaitingACK(to, key);
       this.packetSystem.spawn(from, to, initPos, msg, type, header)
       this.sentPacketNumber += 1;
     } this.msgs_to_send = []
@@ -135,6 +140,7 @@ export class NetworkSystem {
     if (this.clock % 10 != 0) return;
     if (!this.simulationRunning) return;
     if (this.sentPacketNumber >= config.SIMULATION_TOTAL_NUMBER_OF_PACKETS) return;
+    if (this.dev_mode) return;
     if (Math.random() > config.SIMULATION_PACKET_SPAWN_PROBABILITY) return;
 
     //const [a, b] = edges[Math.floor(Math.random() * edges.length)];
@@ -142,7 +148,8 @@ export class NetworkSystem {
     do {
       a = Math.floor(Math.random() * (this.people.length-1));
       b = Math.floor(Math.random() * (this.people.length));
-    } while (a === b)
+    } while (a === b || (this.returnPersonType(a) === "PLAYER") || (this.returnPersonType(b) === "PLAYER")
+                     || (this.returnPersonType(a) === "REMOTE") || (this.returnPersonType(b) === "REMOTE"));
 
     let pa = this.people[a];
     const key = Math.floor(Math.random() * 10000);

@@ -82,7 +82,7 @@ const mouse = new THREE.Vector2();
    Picking Tolerance (Radius-Based)
 ============================= */
 const POINT_SIZE = 15;
-const toleranceRatio = 2.0;
+const toleranceRatio = 4.0;
 
 function pointPixelRadiusToWorld(camera, renderer, pixelRadius) {
   const viewHeight = camera.top - camera.bottom;
@@ -224,8 +224,10 @@ renderer.domElement.addEventListener("contextmenu", (event) => {
   if (hits.length === 0) return;
 
   const clickedIndex = hits[0].index;
+  
+  if(networkSystem.returnPersonType(clickedIndex) != "PLAYER" &&
+     networkSystem.returnPersonType(clickedIndex) != "REMOTE") return;
   senderId = clickedIndex;
-  // TODO : works when only player or remote state
   clearDisplayedPath(scene);
   putSenderId(clickedIndex);
 });

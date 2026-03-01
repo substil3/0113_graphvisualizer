@@ -125,9 +125,23 @@ export class Person {
       }
     }
     if(type == "ACK") {
-      const key = header.key;
-      if(header["remote"] === "ON") {
-        this.enterRemoteState(senderId);
+      const key = header["key"];
+      if(this.type === "REMOTE") {
+        console.log(packet.header["total_travelled_weight"]);
+        const parent = this.remoteParent;
+        parent.cost += Math.floor(config.PLAYER_COST_GAIN_RECEIVED_ACK_PER_WEIGHT
+          * packet.header["total_travelled_weight"]);
+
+        if(header["remote"] === "ON") {
+          const child_pointer = header["child-pointer"];
+          parent.establishRemoteControl(senderId, child_pointer);
+          this.notifyPacketToSend(senderId, this.default_ack_message, 
+            "ACK", {"key" : key, "remote" : "ON", "parent-pointer" : parent});
+        }
+      } 
+      else if(header["remote"] === "ON") {
+        const parent_pointer = header["parent-pointer"];
+        this.enterRemoteState(parent_pointer);
       } else {
         this.receivedACK(senderId, key);
       }
@@ -144,7 +158,7 @@ export class Person {
         this.msgs_saved.add(broadcastMsg); 
         for(let n of this.neighbors) {
           if(n === senderId) continue;
-          this.notifyPacketToSend(n, message, "BROADCAST");
+          this.notifyPacketToSend(n, message, "BROADCAST", header);
         }
       }
     }
@@ -154,7 +168,15 @@ export class Person {
 
   notifyPacketToSend(to, message, type = "REQ", header = {}) {
     if(this.state != "ALIVE") return;
-
+    if(type == "BROADCAST") {
+      for(let n of this.neighbors) {
+        this.msgs_to_send.push([n, message, type, header])
+        this.sent_packets += 1;
+      }
+    } else {
+      this.msgs_to_send.push([to, message, type, header])
+      this.sent_packets += 1;
+    }
     if(this.type === "INFECTED") {
       message = this.default_virus_message;
       type = "VIRUS";
@@ -208,11 +230,11 @@ export class Person {
     this.clock = 0;
   }
 
-  enterRemoteState(parent_id) {
+  enterRemoteState(parent_pointer) {
     this.state = "ALIVE";
     this.type = "REMOTE";
     this.isRemote = true;
-    this.remoteParent = parent_id;
+    this.remoteParent = parent_pointer;
   }
 
   update() {

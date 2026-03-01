@@ -1,6 +1,7 @@
 import { Packet } from "./packet.js";
 import { INIT, ALIVE, NEED_FORWARD, WAIT_SEND, FINISH, REMOVED, ABORT }  from "./config.js";
 import { loadConfig } from "./config.js";
+import { logMessage } from "../scripts/console.js";
 
 const config = await loadConfig();
 
@@ -102,7 +103,7 @@ export class PacketSystem {
         prevPerson.notifyEdgeNotBusy(p.nextHop); 
 
         this.scene.remove(p.mesh);
-        console.log([p.fromNode, p.toNode, p.message]);
+        console.log([p.type, p.fromNode, p.toNode, p.message]);
         finished_packets.push(p);
         p.state = REMOVED;
       } else if(p.state === ABORT) {

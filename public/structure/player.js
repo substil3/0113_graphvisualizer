@@ -75,11 +75,10 @@ export class Player extends Person {
         * packet.header["total_travelled_weight"]);
 
       if(header["remote"] === "ON") {
-        console.log("asdfasdf")
         const child_pointer = header["child-pointer"];
         this.establishRemoteControl(senderId, child_pointer);
         this.notifyPacketToSend(senderId, this.default_ack_message, 
-          "ACK", {"key" : key, "remote" : "ON"});
+          "ACK", {"key" : key, "remote" : "ON", "parent-pointer" : this});
       }
     }
 
@@ -90,7 +89,7 @@ export class Player extends Person {
         this.msgs_saved.add(broadcastMsg);
         for(let n of this.neighbors) {
           if(n === senderId) continue;
-          this.notifyPacketToSend(n, broadcastMsg, "BROADCAST");
+          this.notifyPacketToSend(n, message, "BROADCAST", header);
         }
       }
     }
@@ -122,7 +121,6 @@ export class Player extends Person {
   notifyPacketToSend(to, message, type = "REQ", header = {}) {
     if(this.state != "ALIVE") return;
     if(type == "BROADCAST") {
-      if(to != this.id) throw new Error(`player id not match : ${to}`);
       for(let n of this.neighbors) {
         this.msgs_to_send.push([n, message, type, header])
         this.sent_packets += 1;
@@ -149,7 +147,8 @@ export class Player extends Person {
     if(type === "REQ")   message = this.default_req_message;
     if(type === "ACK")   message = this.default_ack_message;
     if(type === "BROADCAST") {
-      to = this.id;
+      to = -1;
+      remote = false;
       message = this.default_broadcast_message + `${Math.floor(Math.random() * 10000)}`;
       console.log(message)
     } if(type === "REMOTE") {
@@ -161,6 +160,7 @@ export class Player extends Person {
     this.cost -= config.PLAYER_COST_SEND_PACKET[type];
     if(remote) {
       const child = this.remote_child[remote_id];
+      header = {...header, ...{"root" : this.id}};
       child.notifyPacketToSend(to, message, type, header);
     } else {
       this.notifyPacketToSend(to, message, type, header);
