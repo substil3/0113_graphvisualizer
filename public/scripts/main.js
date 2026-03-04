@@ -309,11 +309,18 @@ setupPacketTypeToggle();
    Render Loop
 ============================= */
 
+const clock = new THREE.Clock();
+const frameGap = 0.3;
+let frame = 1;
+
 function animate() {
-  requestAnimationFrame(animate);
   
+  requestAnimationFrame(animate);
   networkSystem.update();
   updateNodeStateFromNetwork(geometry, people);
+
+  if(clock.getElapsedTime() < frame * frameGap) return;
+  else frame++;
 
   renderer.render(scene, camera);
   updateSimulationValues({

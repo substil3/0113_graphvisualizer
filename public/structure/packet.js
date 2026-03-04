@@ -10,7 +10,7 @@ function calculateWeight(x, passed_nodes) {
 }
 
 export class Packet {
-  constructor(id, fromNode, toNode, initPos = null, message, type, header = null, speed = 0.04) {
+  constructor(id, fromNode, toNode, initPos = null, message, type, header = null, speed = 0.02) {
     this.id = id;
     this.type = type;
     this.state = INIT;
