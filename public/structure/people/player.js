@@ -1,5 +1,5 @@
-import { logMessage } from "../scripts/console.js";
-import { loadConfig } from "./config.js";
+import { logMessage } from "../../scripts/console.js";
+import { loadConfig } from "../config.js";
 import { Person } from "./person.js";
 
 const config = await loadConfig();
@@ -98,6 +98,12 @@ export class Player extends Person {
     }
 
     this.received_packets += 1;
+  }
+
+  notifyPacketAborted(packet) {
+    super(packet);
+    logMessage(`packet (id : ${packet.id}) to ${packet.toNode} is aborted by timeout`);
+    this.cost += config.PLAYER_COST_SEND_PACKET[packet.type];
   }
 
   costRefill(refill = 1) {

@@ -1,5 +1,5 @@
-import { logMessage } from "../scripts/console.js";
-import { loadConfig } from "./config.js";
+import { logMessage } from "../../scripts/console.js";
+import { loadConfig } from "../config.js";
 import { Person } from "./person.js";
 
 const config = await loadConfig();

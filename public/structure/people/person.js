@@ -1,6 +1,6 @@
-import { logMessage } from "../scripts/console.js";
-import { loadConfig } from "./config.js";
-import { convertNumberToString } from "./number.js";
+import { logMessage } from "../../scripts/console.js";
+import { loadConfig } from "../config.js";
+import { convertNumberToString } from "../number.js";
 
 const config = await loadConfig();
 
@@ -188,6 +188,14 @@ export class Person {
       message = this.default_virus_message;
       type = "VIRUS";
     }
+  }
+
+  notifyPacketAborted(packet) {
+    const senderId = packet.fromNode;
+    const key = packet.header["key"];
+    if(!this.waiting_resp[senderId]) return;
+    if(!this.waiting_resp[senderId].has(key)) return;
+    this.waiting_resp[senderId].delete(key);
   }
 
   addWaitingACK(receiverId, key) {

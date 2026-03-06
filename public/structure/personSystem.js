@@ -1,7 +1,7 @@
 import { faker } from "https://cdn.jsdelivr.net/npm/@faker-js/faker/+esm";
-import { Person } from "./person.js";
-import { Player } from "./player.js";
-import { Hacker } from "./hacker.js";
+import { Person } from "./people/person.js";
+import { Player } from "./people/player.js";
+import { Hacker } from "./people/hacker.js";
 
 export function createPeople(count = 80) {
   faker.seed(Math.random()*40000);
