@@ -1,5 +1,4 @@
 export function instantHash(str) {
-    
   let hash = 5381;
   let i = str.length;
   while (i) {

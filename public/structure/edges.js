@@ -3,5 +3,4 @@ export class Edge {
     this.from = from;
     this.to = to;
   }
-
 }

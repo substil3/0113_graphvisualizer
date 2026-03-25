@@ -94,6 +94,10 @@ export class NetworkSystem {
     return this.people[personId].type;
   }
 
+  returnPersonState(personId) {
+    return this.people[personId].state;
+  }
+
   updatePacketMovement() {
     if(!this.simulationRunning) return;
     let packetSystemState = this.packetSystem.update(this.people, this.positionAttr);
@@ -157,7 +161,7 @@ export class NetworkSystem {
       b = Math.floor(Math.random() * (this.people.length));
     } while (a === b || (this.returnPersonType(a) === "PLAYER") || (this.returnPersonType(b) === "PLAYER")
                      || (this.returnPersonType(a) === "MALICIOUS") || (this.returnPersonType(b) === "MALICIOUS")
-                     || (this.returnPersonType(a) === "REMOTE") || (this.returnPersonType(b) === "REMOTE"));
+                     || (this.returnPersonState(a) === "INFECTED") || (this.returnPersonState(b) === "INFECTED"));
 
     let pa = this.people[a];
     const key = Math.floor(Math.random() * 10000);
