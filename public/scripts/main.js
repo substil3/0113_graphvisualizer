@@ -189,7 +189,8 @@ renderer.domElement.addEventListener("click", (event) => {
       putReceiverId (clickedIndex);
     } else selectedIndex = clickedIndex;
   }
-  /*
+
+  /* add edge between selected two nodes (not for use anymore?)
   if (selectedIndex === null) {
     selectedIndex = clickedIndex;
     selectNode(clickedIndex);
@@ -231,6 +232,10 @@ renderer.domElement.addEventListener("contextmenu", (event) => {
   clearDisplayedPath(scene);
   putSenderId(clickedIndex);
 });
+
+/* =============================
+   Key Interaction (especially, when pressing A key for routing)
+============================= */
 
 let routeLines = [];
 
@@ -276,6 +281,7 @@ window.addEventListener("keyup", (event) => {
 /* =============================
    Camera Movement (Pan / Zoom)
 ============================= */
+
 enableMovement({
   camera,
   renderer,
@@ -309,8 +315,10 @@ setupPacketTypeToggle();
    Render Loop
 ============================= */
 
+// for frame control : if frameGap value is X, forces frame rate according to the gap of frame to be Xms
+const hasFixedFrameRate = config.SCENE_FIXED_FRAME_RATE;
 const clock = new THREE.Clock();
-const frameGap = 0.3;
+const frameGap = 1 / (config.SCENE_TARGET_FRAME_RATE_VALUE);
 let frame = 1;
 
 function animate() {
@@ -319,8 +327,10 @@ function animate() {
   networkSystem.update();
   updateNodeStateFromNetwork(geometry, people);
 
-  if(clock.getElapsedTime() < frame * frameGap) return;
-  else frame++;
+  if(hasFixedFrameRate) {
+    if(clock.getElapsedTime() < frame * frameGap) return;
+    else frame++;
+  }
 
   renderer.render(scene, camera);
   updateSimulationValues({

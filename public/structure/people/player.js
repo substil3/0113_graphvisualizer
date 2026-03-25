@@ -101,7 +101,7 @@ export class Player extends Person {
   }
 
   notifyPacketAborted(packet) {
-    super(packet);
+    //super(packet);
     logMessage(`packet (id : ${packet.id}) to ${packet.toNode} is aborted by timeout`);
     this.cost += config.PLAYER_COST_SEND_PACKET[packet.type];
   }

@@ -110,7 +110,7 @@ export class NetworkSystem {
 
     for(let ap of packetSystemState["aborted_packets"]) {
       // TODO (let fromPerson to be notifyed that packet is aborted)
-      let toPerson = this.people[fp.toNode];
+      let toPerson = this.people[ap.toNode];
       toPerson.notifyPacketAborted(ap);
       this.abortedPacketNumber += 1;
     }

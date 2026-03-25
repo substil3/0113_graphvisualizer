@@ -20,7 +20,7 @@ export class Person {
 
     this.default_req_message = "So you do have a mother!";
     this.default_ack_message = "Yes. I have literally two mothers.";
-    this.ack_message_unique_num = 2
+    this.ack_message_unique_num = 2;
 
     this.clock = 0;
     this.type = "NORMAL";
@@ -136,6 +136,8 @@ export class Person {
         if(header["remote"] === "ON") {
           const child_pointer = header["child-pointer"];
           parent.establishRemoteControl(senderId, child_pointer);
+
+          // default message varies as number of child when remote state
           this.ack_message_unique_num += 1;
           this.default_ack_message = `Yes. I have literally 
                                       ${convertNumberToString[this.ack_message_unique_num]} mothers.`
