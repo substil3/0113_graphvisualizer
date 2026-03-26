@@ -10,7 +10,7 @@ export class Player extends Person {
     this.type = "PLAYER";
 
     this.default_cure_message = `You Are Not Idiot. Don't Kill Yourself. From ${this.name}`
-    this.default_broadcast_message =`BROADCAST:${"YOUARENOTIDIOT"}`
+    this.default_broadcast_message =`BROADCAST:`
     this.default_remote_message = `I'm Your New Mother. Pray For Me.`;
 
     this.cost = config.PLAYER_INITIAL_COST;
@@ -102,6 +102,11 @@ export class Player extends Person {
 
   notifyPacketAborted(packet) {
     //super(packet);
+    const senderId = packet.fromNode;
+    const key = packet.header["key"];
+    if(!this.waiting_resp[senderId]) return;
+    if(!this.waiting_resp[senderId].has(key)) return;
+    this.waiting_resp[senderId].delete(key);
     logMessage(`packet (id : ${packet.id}) to ${packet.toNode} is aborted by timeout`);
     this.cost += config.PLAYER_COST_SEND_PACKET[packet.type];
   }

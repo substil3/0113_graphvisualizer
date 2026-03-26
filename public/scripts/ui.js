@@ -121,9 +121,46 @@ export function setupPacketTypeToggle() {
   });
 
   const defaultBtn = document.getElementById("packetType:REQ");
-  if (defaultBtn) {
+  if (defaultBtn)
     defaultBtn.click();
-  }
 
   return; 
+}
+
+export function setupOptionButtonToggle() {
+  const buttons = document.querySelectorAll(".optionButton");
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      btn.classList.toggle("active");
+    });
+  });
+  return; 
+}
+
+export function setupReloadButton(reloadWorld) {
+  const btn = document.getElementById("reloadWorld");    
+  btn.addEventListener("click", () => {
+    reloadWorld();
+  });
+}
+
+export function setupUIElements(networkSystem, playerId) {
+  setupSimulationButton(() => {
+    networkSystem.runOrStopNetworkSimulation();
+    if (networkSystem.simulationRunning) logMessage("simulation running")
+    else logMessage("simulation stopped")
+  });
+  
+  setupSendPacketForm((from, to, type) => {
+    networkSystem.notifyPlayerSendPacket(from, to, type);
+  }, playerId)
+  
+  renderRoutingTableEditor(networkSystem.player);
+  setupRoutingUpdateButton(networkSystem.player);
+  setupPacketTypeToggle();
+  setupOptionButtonToggle();
+  setupReloadButton(function() {
+    location.href = location.href;
+  })
 }

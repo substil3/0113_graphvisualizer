@@ -5,11 +5,10 @@ import { createNodes, updateNodeStateFromNetwork } from "./nodes.js";
 import { enableMovement } from "./movement.js";
 import { logMessage } from "./console.js";
 import { generateConnectedGraph } from "./graph.js";
-import { setupSendPacketForm, setupSimulationButton, 
-        updateSimulationValues, updatePlayerPanel,
-        renderRoutingTableEditor, setupRoutingUpdateButton,
-        putSenderId, putReceiverId,
-        setupPacketTypeToggle} from "./ui.js";
+import { setupUIElements,
+         updateSimulationValues, updatePlayerPanel,
+         putSenderId, putReceiverId,
+        } from "./ui.js";
 import { createPeople } from "../structure/personSystem.js";
 import { PacketSystem } from "../structure/packetSystem.js";
 import { NetworkSystem } from "../structure/networkSystem.js";
@@ -297,19 +296,7 @@ camera.position.z = 10;
    initialize simulation UIs
 ============================= */
 
-setupSimulationButton(() => {
-  networkSystem.runOrStopNetworkSimulation();
-  if (networkSystem.simulationRunning) logMessage("simulation running")
-  else logMessage("simulation stopped")
-});
-
-setupSendPacketForm((from, to, type) => {
-  networkSystem.notifyPlayerSendPacket(from, to, type);
-}, playerId)
-
-renderRoutingTableEditor(networkSystem.player);
-setupRoutingUpdateButton(networkSystem.player);
-setupPacketTypeToggle();
+setupUIElements(networkSystem, playerId);
 
 /* =============================
    Render Loop

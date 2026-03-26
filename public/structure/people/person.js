@@ -161,7 +161,7 @@ export class Person {
       this.infected(senderName)
     }
     if(type == "BROADCAST") {
-      let [, broadcastMsg] = message.split(":")
+      let broadcastMsg = message;
       if(!this.msgs_saved.has(broadcastMsg)) { 
         this.msgs_saved.add(broadcastMsg); 
         for(let n of this.neighbors) {

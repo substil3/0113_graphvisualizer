@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="style.css">
 <head>
   <meta charset="UTF-8" />
-  <title>Network Graph Simulation with Virus and Hacker</title>
+  <title>Network Graph Webgame with Virus and Hacker by systil3</title>
   <style>
     body { margin: 0; overflow: hidden; background: #111; }
   </style>
@@ -12,24 +12,33 @@
   <script type="module" src="./scripts/main.js"></script>
 
   <div id="console"></div>
-  <button id="startSim" class="simButton">Start</button>
-    <input
-      id="senderId"
-      class="simForm"
-      placeholder="Sender ID"
-      min="0"
-    /> 
-    <input
-      id="receiverId"
-      class="simForm"
-      placeholder="Receiver ID"
-      min="0"
-    /> 
-    <button id="packetType:REQ" class="simButton packetTypeButton"> REQ - 20 cost</button>
-    <button id="packetType:CURE" class="simButton packetTypeButton"> CURE - 30 cost </button>
-    <button id="packetType:REMOTE" class="simButton packetTypeButton"> REMOTE - 50 cost </button>
-    <button id="packetType:BROADCAST" class="simButton packetTypeButton"> BROADCAST - 100 cost </button>
-  <button id="sendPacket" class="simButton" type="submit">Send Packet</button>
+  <header class="simHeader"> 
+    <button id="startSim" class="simButton">Start</button>
+      <input
+        id="senderId"
+        class="simForm"
+        placeholder="Sender ID"
+        min="0"
+      /> 
+      <input
+        id="receiverId"
+        class="simForm"
+        placeholder="Receiver ID"
+        min="0"
+      /> 
+      <button id="packetType:REQ" class="simButton packetTypeButton"> REQ - 20 cost</button>
+      <button id="packetType:CURE" class="simButton packetTypeButton"> CURE - 30 cost </button>
+      <button id="packetType:REMOTE" class="simButton packetTypeButton"> REMOTE - 50 cost </button>
+      <!--<button id="packetType:BROADCAST" class="simButton packetTypeButton"> BROADCAST - 100 cost </button>-->
+    <button id="sendPacket" class="simButton" type="submit">Send Packet</button>
+
+    <button id="optionButton:ONLYSIM" class="simButton optionButton"> only simulation </button>
+    <button id="optionButton:DEVMODE" class="simButton optionButton"> enable dev mode </button>
+  </header>
+
+  <header class="simHeader">
+    <button id="reloadWorld" class="simButton" style="float: right; margin-right: 10px;"> reload world </button>
+  </header>
 
 <div id="metaPanel">
   <div class="metaRow">

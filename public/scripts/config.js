@@ -38,7 +38,7 @@ export async function loadConfig() {
     "SIMULATION_DEVELOPER_MODE" : true,
 
     "SCENE_FIXED_FRAME_RATE" : true,
-    "SCENE_TARGET_FRAME_RATE_VALUE" : 10,
+    "SCENE_TARGET_FRAME_RATE_VALUE" : 60,
     }
 
     return config
