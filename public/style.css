@@ -44,12 +44,21 @@ body {
   margin-top: 10px;
 }
 
-.simButton:hover {
+.simButton:not(:disabled):hover {
   background: rgba(0, 255, 128, 0.25);
 }
 
-.simButton:active {
-  background: rgba(0, 128, 255, 0.4);  
+.simButton:not(:disabled):active {
+  background: rgba(0, 128, 255, 0.4);
+}
+
+.simButton:disabled,
+.simForm:disabled {
+  background: rgba(80, 80, 80, 0.15);
+  color: #555;
+  border-color: #444;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .packetTypeButton {
@@ -201,4 +210,46 @@ body {
   padding: 2px 4px;
   pointer-events: auto;
   z-index: 10;
+}
+
+.resultPanel {
+  display: none;
+  position: fixed;
+  left: 16px;
+  z-index: 10;
+  width: 256px;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  color: #ddd;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+#resultsPanel {
+  top: 60px;
+}
+
+#personStatePanel {
+  top: calc(60px + 310px + 10px);
+}
+
+.resultsTitle {
+  color: #0f0;
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.resultPanel canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+.resultsStats {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.8;
 }

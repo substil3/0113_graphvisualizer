@@ -2,10 +2,10 @@ export async function loadConfig() {
 
     const config = {
     "GRID_CELL_SIZE": 1.0,
-    "GRID_WIDTH": 40,
-    "GRID_HEIGHT": 40,
+    "GRID_WIDTH": 35,
+    "GRID_HEIGHT": 35,
 
-    "GRAPH_EXTRA_EDGE_PROBABILITY": 0.03,
+    "GRAPH_EXTRA_EDGE_PROBABILITY": 0.033,
     "GRAPH_NODES_MIN_DISTANCE": 3,              // in grid cells
     "GRAPH_NODES_CONNECTED_MAX_DISTANCE": 20,    // in grid cells
 
@@ -32,8 +32,10 @@ export async function loadConfig() {
         "PLAYER" : 0
     },
 
-    "SIMULATION_TOTAL_NUMBER_OF_PACKETS" : 1000,
-    "SIMULATION_PACKET_SPAWN_PROBABILITY" : 0.01,
+    "SIMULATION_HAS_PLAYER_ACTION" : true,
+    "SIMULATION_TOTAL_TIME" : 2000, 
+    "SIMULATION_TOTAL_NUMBER_OF_PACKETS" : 2000,
+    "SIMULATION_PACKET_SPAWN_PROBABILITY" : 0.03,
     "SIMULATION_PACKET_CORRUPTION_PROBABILITY" : 0.01, //TODO
     "SIMULATION_DEVELOPER_MODE" : true,
 

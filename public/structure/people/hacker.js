@@ -1,4 +1,4 @@
-import { logMessage } from "../../scripts/console.js";
+import { logMessage } from "../../scripts/ui.js";
 import { loadConfig } from "../config.js";
 import { Person } from "./person.js";
 

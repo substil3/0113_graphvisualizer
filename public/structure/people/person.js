@@ -1,4 +1,4 @@
-import { logMessage } from "../../scripts/console.js";
+import { logMessage } from "../../scripts/ui.js";
 import { loadConfig } from "../config.js";
 import { convertNumberToString } from "../number.js";
 
@@ -158,7 +158,8 @@ export class Person {
       this.revive();
     }
     if(type == "VIRUS") {
-      this.infected(senderName)
+      //this.infected(senderName);
+      this.die(senderName);
     }
     if(type == "BROADCAST") {
       let broadcastMsg = message;

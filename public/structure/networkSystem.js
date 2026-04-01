@@ -1,4 +1,4 @@
-import { logMessage } from "../scripts/console.js";
+import { logMessage } from "../scripts/ui.js";
 import { reconstructNextHop, dijkstra } from "./routing.js"
 import { Edge } from "./edges.js"
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
@@ -7,9 +7,10 @@ import { loadConfig } from "./config.js";
 const config = await loadConfig();
 
 export class NetworkSystem {
-  constructor(people, positionAttr, edgePoints, packetSystem) {
+  constructor(people, positionAttr, edgePoints, packetSystem, playerId, hasPlayerAction) {
     this.people = people;
-    this.player = this.people[this.people.length-1];
+    this.player = this.people[playerId];
+    if(!hasPlayerAction) this.player.makeInvincible();
     this.numOfPeople = this.people.length;
     this.positionAttr = positionAttr;
     this.edgePoints = edgePoints;

@@ -3,11 +3,13 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 import { createScene, addEdgeOnScene} from "./scene.js";
 import { createNodes, updateNodeStateFromNetwork } from "./nodes.js";
 import { enableMovement } from "./movement.js";
-import { logMessage } from "./console.js";
+import { logMessage } from "./ui.js";
 import { generateConnectedGraph } from "./graph.js";
 import { setupUIElements,
          updateSimulationValues, updatePlayerPanel,
          putSenderId, putReceiverId,
+         disableAllActionButtons, getSavedOptions,
+         showResultsPanel, showPersonStatePanel
         } from "./ui.js";
 import { createPeople } from "../structure/personSystem.js";
 import { PacketSystem } from "../structure/packetSystem.js";
@@ -24,6 +26,8 @@ const { scene, camera, renderer } = createScene();
 /* =============================
    Setup Backend Info - Init Network properties, Generate Nodes and Graph, Create Packet
 ============================= */
+const savedOptions = getSavedOptions();
+const hasPlayerAction = config.SIMULATION_HAS_PLAYER_ACTION && !savedOptions.has('optionButton:ONLYSIM');
 const numOfPeople = config["NUMBER_OF_PERSONS"];
 const people = createPeople(numOfPeople);
 const playerId = numOfPeople-1;
@@ -55,7 +59,8 @@ for (const edge of edges) {
 } 
 
 const packetSystem = new PacketSystem(scene, positionAttr);
-const networkSystem = new NetworkSystem(people, positionAttr, edges, packetSystem)
+const networkSystem = new NetworkSystem(people, positionAttr, edges, 
+                                        packetSystem, playerId, hasPlayerAction);
 
 /* =============================
    Selection Helpers
@@ -289,7 +294,7 @@ enableMovement({
 }); 
 
 [camera.position.x, camera.position.y, camera.position.z] = 
-  new THREE.Vector3().fromBufferAttribute(positionAttr, playerId);
+  new THREE.Vector3().fromBufferAttribute(positionAttr, playerId != -1 ? playerId : 1);
 camera.position.z = 10;
 
 /* =============================
@@ -297,6 +302,7 @@ camera.position.z = 10;
 ============================= */
 
 setupUIElements(networkSystem, playerId);
+if (!hasPlayerAction) disableAllActionButtons();
 
 /* =============================
    Render Loop
@@ -308,16 +314,47 @@ const clock = new THREE.Clock();
 const frameGap = 1 / (config.SCENE_TARGET_FRAME_RATE_VALUE);
 let frame = 1;
 
-function animate() {
-  
-  requestAnimationFrame(animate);
-  networkSystem.update();
-  updateNodeStateFromNetwork(geometry, people);
+const sentNumbers = [];
+const receivedNumbers = [];
+const abortedNumbers = [];
+const aliveNumbers = [];
+const deadNumbers = [];
 
+function animate() {
+
+  requestAnimationFrame(animate);
   if(hasFixedFrameRate) {
     if(clock.getElapsedTime() < frame * frameGap) return;
     else frame++;
   }
+
+  //if (networkSystem.simulationRunning && networkSystem.clock >= config.SIMULATION_TOTAL_TIME) {
+  if (networkSystem.simulationRunning && 
+      (networkSystem.receivedPacketNumber + networkSystem.abortedPacketNumber) >= config.SIMULATION_TOTAL_NUMBER_OF_PACKETS) {
+    networkSystem.stopNetworkSimulation();
+    showResultsPanel(sentNumbers, receivedNumbers, abortedNumbers, networkSystem.clock);
+    showPersonStatePanel(aliveNumbers, deadNumbers);
+    logMessage("Simulation complete.");
+    return;
+  }
+
+  networkSystem.update();
+
+  if (networkSystem.simulationRunning) {
+    sentNumbers.push(networkSystem.sentPacketNumber);
+    receivedNumbers.push(networkSystem.receivedPacketNumber);
+    abortedNumbers.push(networkSystem.abortedPacketNumber);
+
+    let alive = 0, dead = 0;
+    for (const p of people) {
+      if (p.state === "ALIVE") alive++;
+      else if (p.state === "DEAD") dead++;
+    }
+    aliveNumbers.push(alive);
+    deadNumbers.push(dead);
+  }
+
+  updateNodeStateFromNetwork(geometry, people);
 
   renderer.render(scene, camera);
   updateSimulationValues({

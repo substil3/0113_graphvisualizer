@@ -1,11 +1,14 @@
-import { logMessage } from "./console.js";
-
 const metaPanel  = document.getElementById("metaPanel");
 const startSimBtn = document.getElementById("startSim");
 const senderIdInput = document.getElementById("senderId");
 const receiverIdInput = document.getElementById("receiverId");
 const sendPacketButton = document.getElementById("sendPacket");
 let sendPacketType = "REQ";
+
+export function logMessage(text) {
+  const el = document.getElementById("console");
+  el.textContent = text;
+}
 
 export function setupSimulationButton(onStart) {
   startSimBtn.addEventListener("click", () => {
@@ -108,6 +111,10 @@ export function setupRoutingUpdateButton(player) {
   });
 }
 
+export function getSavedOptions() {
+  return new Set(JSON.parse(sessionStorage.getItem('activeOptions') || '[]'));
+}
+
 export function setupPacketTypeToggle() {
   const buttons = document.querySelectorAll(".packetTypeButton");
 
@@ -129,18 +136,23 @@ export function setupPacketTypeToggle() {
 
 export function setupOptionButtonToggle() {
   const buttons = document.querySelectorAll(".optionButton");
+  const saved = getSavedOptions();
 
   buttons.forEach((btn) => {
+    if (saved.has(btn.id)) btn.classList.add("active");
     btn.addEventListener("click", () => {
       btn.classList.toggle("active");
     });
   });
-  return; 
+  sessionStorage.removeItem('activeOptions');
+  return;
 }
 
 export function setupReloadButton(reloadWorld) {
-  const btn = document.getElementById("reloadWorld");    
+  const btn = document.getElementById("reloadWorld");
   btn.addEventListener("click", () => {
+    const active = [...document.querySelectorAll(".optionButton.active")].map(b => b.id);
+    sessionStorage.setItem('activeOptions', JSON.stringify(active));
     reloadWorld();
   });
 }
@@ -163,4 +175,261 @@ export function setupUIElements(networkSystem, playerId) {
   setupReloadButton(function() {
     location.href = location.href;
   })
+}
+
+export function showResultsPanel(sentHistory, receivedHistory, abortedHistory, elapsedTime) {
+  const panel = document.getElementById("resultsPanel");
+  document.getElementsByClassName("resultsTitle")[0].textContent += String(elapsedTime) + ")";
+  panel.style.display = "block";
+
+  const sent     = sentHistory[sentHistory.length - 1]         ?? 0;
+  const received = receivedHistory[receivedHistory.length - 1] ?? 0;
+  const aborted  = abortedHistory[abortedHistory.length - 1]   ?? 0;
+
+  document.getElementById("resultSent").textContent     = sent;
+  document.getElementById("resultReceived").textContent = received;
+  document.getElementById("resultAborted").textContent  = aborted;
+
+  const canvas = document.getElementById("resultsChart");
+  const ctx    = canvas.getContext("2d");
+  const W = canvas.width;
+  const H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const ratioHistory = sentHistory.map((s, i) =>
+    s > 0 ? receivedHistory[i] / s : 0
+  );
+
+  const series = [
+    { data: sentHistory,     color: "#4da3ff", label: "Sent" },
+    { data: receivedHistory, color: "#3cff00", label: "Received" },
+    { data: abortedHistory,  color: "#e04343", label: "Aborted" },
+  ];
+
+  const padL = 30, padR = 28, padT = 10, padB = 46;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const n      = sentHistory.length;
+
+  const maxVal = Math.max(...series.flatMap(s => s.data), 1);
+
+  // downsample
+  const resample = (arr, maxPts) => {
+    if (arr.length <= maxPts) return arr;
+    const step = arr.length / maxPts;
+    return Array.from({ length: maxPts }, (_, i) => arr[Math.floor(i * step)]);
+  };
+
+  // left y-axis grid lines + labels (packet counts)
+  ctx.font      = "9px monospace";
+  ctx.textAlign = "right";
+  for (let i = 0; i <= 4; i++) {
+    const val = Math.round((maxVal * i) / 4);
+    const y   = padT + chartH - (i / 4) * chartH;
+    ctx.fillStyle   = "#777";
+    ctx.fillText(val, padL - 4, y + 3);
+    ctx.strokeStyle = i === 0 ? "#555" : "#222";
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(padL + chartW, y);
+    ctx.stroke();
+  }
+
+  // right y-axis labels (ratio 0%–100%)
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#c084fc";
+  for (let i = 0; i <= 4; i++) {
+    const pct = Math.round((i / 4) * 100);
+    const y   = padT + chartH - (i / 4) * chartH;
+    ctx.fillText(`${pct}%`, padL + chartW + 4, y + 3);
+  }
+
+  // right axis line
+  ctx.strokeStyle = "#4a3060";
+  ctx.lineWidth   = 1;
+  ctx.beginPath();
+  ctx.moveTo(padL + chartW, padT);
+  ctx.lineTo(padL + chartW, padT + chartH);
+  ctx.stroke();
+
+  // axes
+  ctx.strokeStyle = "#555";
+  ctx.lineWidth   = 1;
+  ctx.beginPath();
+  ctx.moveTo(padL, padT);
+  ctx.lineTo(padL, padT + chartH);
+  ctx.lineTo(padL + chartW, padT + chartH);
+  ctx.stroke();
+
+  // x-axis labels (0, mid, end)
+  ctx.fillStyle = "#666";
+  ctx.textAlign = "center";
+  [0, 0.5, 1].forEach(t => {
+    const label = Math.round(t * (n - 1));
+    ctx.fillText(label, padL + t * chartW, padT + chartH + 10);
+  });
+
+  // draw packet count lines (left axis scale)
+  series.forEach(({ data, color }) => {
+    const pts = resample(data, chartW);
+    if (pts.length === 0) return;
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    pts.forEach((val, i) => {
+      const x = padL + (i / (pts.length - 1 || 1)) * chartW;
+      const y = padT + chartH - (val / maxVal) * chartH;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  });
+
+  // draw ratio line (right axis scale, 0–1)
+  const ratioPts = resample(ratioHistory, chartW);
+  if (ratioPts.length > 0) {
+    ctx.strokeStyle = "#c084fc";
+    ctx.lineWidth   = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ratioPts.forEach((val, i) => {
+      const x = padL + (i / (ratioPts.length - 1 || 1)) * chartW;
+      const y = padT + chartH - val * chartH;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // legend
+  const allLegend = [
+    ...series,
+    { color: "#c084fc", label: "Rcvd/Sent", dashed: true },
+  ];
+  ctx.font      = "9px monospace";
+  ctx.textAlign = "left";
+  allLegend.forEach(({ color, label, dashed }, i) => {
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const lx  = padL + col * ((chartW) / 2);
+    const ly  = H - 18 + row * 13;
+    if (dashed) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(lx, ly - 3);
+      ctx.lineTo(lx + 10, ly - 3);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      ctx.fillStyle = color;
+      ctx.fillRect(lx, ly - 8, 10, 7);
+    }
+    ctx.fillStyle = "#aaa";
+    ctx.fillText(label, lx + 13, ly);
+  });
+}
+
+export function showPersonStatePanel(aliveHistory, deadHistory) {
+  const panel = document.getElementById("personStatePanel");
+  panel.style.display = "block";
+
+  const alive = aliveHistory[aliveHistory.length - 1] ?? 0;
+  const dead  = deadHistory[deadHistory.length - 1]   ?? 0;
+
+  document.getElementById("resultAlive").textContent = alive;
+  document.getElementById("resultDead").textContent  = dead;
+
+  const canvas = document.getElementById("personStateChart");
+  const ctx    = canvas.getContext("2d");
+  const W = canvas.width;
+  const H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const series = [
+    { data: aliveHistory, color: "#3cff00", label: "Alive" },
+    { data: deadHistory,  color: "#e04343", label: "Dead"  },
+  ];
+
+  const padL = 30, padR = 10, padT = 10, padB = 32;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const n      = aliveHistory.length;
+
+  const maxVal = Math.max(...series.flatMap(s => s.data), 1);
+
+  const resample = (arr, maxPts) => {
+    if (arr.length <= maxPts) return arr;
+    const step = arr.length / maxPts;
+    return Array.from({ length: maxPts }, (_, i) => arr[Math.floor(i * step)]);
+  };
+
+  // y-axis grid + labels
+  ctx.font      = "9px monospace";
+  ctx.textAlign = "right";
+  for (let i = 0; i <= 4; i++) {
+    const val = Math.round((maxVal * i) / 4);
+    const y   = padT + chartH - (i / 4) * chartH;
+    ctx.fillStyle   = "#777";
+    ctx.fillText(val, padL - 4, y + 3);
+    ctx.strokeStyle = i === 0 ? "#555" : "#222";
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(padL + chartW, y);
+    ctx.stroke();
+  }
+
+  // axes
+  ctx.strokeStyle = "#555";
+  ctx.lineWidth   = 1;
+  ctx.beginPath();
+  ctx.moveTo(padL, padT);
+  ctx.lineTo(padL, padT + chartH);
+  ctx.lineTo(padL + chartW, padT + chartH);
+  ctx.stroke();
+
+  // x-axis labels
+  ctx.fillStyle = "#666";
+  ctx.textAlign = "center";
+  [0, 0.5, 1].forEach(t => {
+    const label = Math.round(t * (n - 1));
+    ctx.fillText(label, padL + t * chartW, padT + chartH + 10);
+  });
+
+  // lines
+  series.forEach(({ data, color }) => {
+    const pts = resample(data, chartW);
+    if (pts.length === 0) return;
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    pts.forEach((val, i) => {
+      const x = padL + (i / (pts.length - 1 || 1)) * chartW;
+      const y = padT + chartH - (val / maxVal) * chartH;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  });
+
+  // legend
+  ctx.font      = "9px monospace";
+  ctx.textAlign = "left";
+  series.forEach(({ color, label }, i) => {
+    const lx = padL + i * ((chartW) / 2);
+    const ly = H - 10;
+    ctx.fillStyle = color;
+    ctx.fillRect(lx, ly - 8, 10, 7);
+    ctx.fillStyle = "#aaa";
+    ctx.fillText(label, lx + 13, ly);
+  });
+}
+
+export function disableAllActionButtons() {
+  document.querySelectorAll('.simButton, .simForm').forEach(el => {
+    if (!el.classList.contains('optionButton') && 
+        el.id !== 'reloadWorld' &&
+        el.id !== 'startSim') el.disabled = true;
+  });
 }

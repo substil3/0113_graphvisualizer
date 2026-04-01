@@ -1,7 +1,7 @@
 import { Packet } from "./packet.js";
 import { INIT, ALIVE, NEED_FORWARD, WAIT_SEND, FINISH, REMOVED, ABORT }  from "./config.js";
 import { loadConfig } from "./config.js";
-import { logMessage } from "../scripts/console.js";
+import { logMessage } from "../scripts/ui.js";
 
 const config = await loadConfig();
 

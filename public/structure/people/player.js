@@ -1,4 +1,4 @@
-import { logMessage } from "../../scripts/console.js";
+import { logMessage } from "../../scripts/ui.js";
 import { loadConfig } from "../config.js";
 import { Person } from "./person.js";
 
@@ -15,8 +15,13 @@ export class Player extends Person {
 
     this.cost = config.PLAYER_INITIAL_COST;
     this.health = config.PLAYER_INITIAL_HEALTH;
+    this.invincible = false;
 
     this.remote_child = {};
+  }
+
+  makeInvincible() {
+    this.invincible === true;
   }
 
   forwardPacketIfNotBusy(p, positionAttr) {
@@ -94,19 +99,15 @@ export class Player extends Person {
     }
 
     if(type == "VIRUS") {
-      this.takeDamage(senderName)
+      if(!this.invincible)
+        this.takeDamage(senderName);
     }
 
     this.received_packets += 1;
   }
 
   notifyPacketAborted(packet) {
-    //super(packet);
-    const senderId = packet.fromNode;
-    const key = packet.header["key"];
-    if(!this.waiting_resp[senderId]) return;
-    if(!this.waiting_resp[senderId].has(key)) return;
-    this.waiting_resp[senderId].delete(key);
+    super.notifyPacketAborted(packet);
     logMessage(`packet (id : ${packet.id}) to ${packet.toNode} is aborted by timeout`);
     this.cost += config.PLAYER_COST_SEND_PACKET[packet.type];
   }

@@ -1,5 +1,5 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-import { logMessage } from "../scripts/console.js";
+import { logMessage } from "../scripts/ui.js";
 import {INIT, ALIVE, NEED_FORWARD, WAIT_SEND, FINISH, ABORT, REMOVED}  from "./config.js"
 import { loadConfig } from "./config.js";
 
@@ -10,7 +10,7 @@ function calculateWeight(x, passed_nodes) {
 }
 
 export class Packet {
-  constructor(id, fromNode, toNode, initPos = null, message, type, header = null, speed = 0.02) {
+  constructor(id, fromNode, toNode, initPos = null, message, type, header = null, speed = 0.04) {
     this.id = id;
     this.type = type;
     this.state = INIT;
@@ -53,7 +53,7 @@ export class Packet {
     const geometry = new THREE.BufferGeometry().setFromPoints([this.pos]);
     const material = new THREE.PointsMaterial({
       color: this.color,
-      size: 4,
+      size: 6,
       sizeAttenuation: false
     });
 

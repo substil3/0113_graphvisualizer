@@ -10,15 +10,15 @@ export async function loadConfig() {
 
     const config = {
         
-    "PACKET_REQ_COLOR" : 0xf7f7f7,
-    "PACKET_ACK_COLOR" : 0xf7f7f7,
+    "PACKET_REQ_COLOR" : 0xf2f2f2,
+    "PACKET_ACK_COLOR" : 0xb5ff3d,
     "PACKET_VIRUS_COLOR" : 0xff4444,
     "PACKET_CURE_COLOR" : 0x5beb63,
     "PACKET_REMOTE_COLOR" : 0x42ecff,
     "PACKET_BROADCAST_COLOR" : 0xffeb14,
     
     "PACKET_CHECK_BUSY_INTERVAL" : 50,
-    "PACKET_WAITING_TIMEOUT" : 1000,
+    "PACKET_WAITING_TIMEOUT" : 800,
 
     "PERSON_DEAD_STATE_TIME" : 1000,
     "PERSON_INFECTED_STATE_TIME" : 500,
